@@ -34,26 +34,20 @@ export const authApiRequest = {
       }
     ),
   logout: () => http.post("/api/auth/logout", null, { baseUrl: "" }),
-  sRefreshToken: (body: RefreshTokenBodyType) =>
-    http.post<RefreshTokenResType>("/auth/refresh-token", body),
+  sRefreshToken: (body: RefreshTokenBodyType) => {
+    return http.post<RefreshTokenResType>("/auth/refresh-token", body);
+  },
 
   async refreshToken() {
-    console.log("auth", this.refreshTokenRequest);
     if (this.refreshTokenRequest) {
       return this.refreshTokenRequest;
     }
-    console.log(2);
     this.refreshTokenRequest = http.post<RefreshTokenResType>(
       "/api/auth/refresh-token",
       null,
       {
         baseUrl: "",
       }
-    );
-    console.log(
-      http.post<RefreshTokenResType>("/api/auth/refresh-token", null, {
-        baseUrl: "",
-      })
     );
     const result = await this.refreshTokenRequest;
     this.refreshTokenRequest = null;

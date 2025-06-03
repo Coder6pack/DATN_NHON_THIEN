@@ -1,3 +1,4 @@
+import { UserStatus } from "@/constants/auth.constant";
 import { RoleSchema } from "@/shared/models/shared-role.model";
 import { UserSchema } from "@/shared/models/shared-user.model";
 import { z } from "zod";
@@ -50,7 +51,20 @@ export const CreateUserBodySchema = UserSchema.pick({
   roleId: true,
 }).strict();
 
-export const UpdateUserBodySchema = CreateUserBodySchema;
+export const UpdateUserBodySchema = z
+  .object({
+    name: z.string().min(1).max(255),
+    email: z.string().email(),
+    phoneNumber: z.string().min(9).max(15),
+    avatar: z.string().nullable(),
+    status: z.enum([
+      UserStatus.ACTIVE,
+      UserStatus.INACTIVE,
+      UserStatus.BLOCKED,
+    ]),
+    roleId: z.number().positive(),
+  })
+  .strict();
 
 export type GetUsersResType = z.infer<typeof GetUsersResSchema>;
 export type GetUsersQueryType = z.infer<typeof GetUsersQuerySchema>;

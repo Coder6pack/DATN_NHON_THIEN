@@ -13,38 +13,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle, Upload } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  CreateUserBodySchema,
-  CreateUserBodyType,
-} from "@/schemaValidations/user.model";
-import { useAddAccountMutation } from "@/app/queries/useAccount";
 import { useUploadFileMediaMutation } from "@/app/queries/useMedia";
 import { toast } from "@/hooks/use-toast";
 import { handleHttpErrorApi } from "@/lib/utils";
+import {
+  CreateBrandBodySchema,
+  CreateBrandBodyType,
+} from "@/schemaValidations/brand.model";
+import { useAddBrandMutation } from "@/app/queries/useBrand";
 
-export default function AddEmployee() {
+export default function AddBrand() {
   const [file, setFile] = useState<File | null>(null);
   const [open, setOpen] = useState(false);
-  const addAccountMutation = useAddAccountMutation();
+  const addBrandMutation = useAddBrandMutation();
   const updateMediaMutation = useUploadFileMediaMutation();
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
-  const form = useForm<CreateUserBodyType>({
-    resolver: zodResolver(CreateUserBodySchema),
+  const form = useForm<CreateBrandBodyType>({
+    resolver: zodResolver(CreateBrandBodySchema),
     defaultValues: {
-      status: "ACTIVE",
       name: "",
-      phoneNumber: "",
-      avatar: "",
-      email: "",
-      password: "",
-      roleId: 3,
+      logo: "",
     },
   });
-  const avatar = form.watch("avatar")!;
+  const avatar = form.watch("logo")!;
   const name = form.watch("name");
 
   const previewAvatarFromFile = file ? URL.createObjectURL(file) : avatar;
@@ -53,8 +48,8 @@ export default function AddEmployee() {
     form.reset();
     setFile(null);
   };
-  const onSubmit = async (values: CreateUserBodyType) => {
-    if (addAccountMutation.isPending) return;
+  const onSubmit = async (values: CreateBrandBodyType) => {
+    if (addBrandMutation.isPending) return;
     try {
       let body = values;
       if (file) {
@@ -67,19 +62,15 @@ export default function AddEmployee() {
         console.log(imageUrl);
         body = {
           ...values,
-          avatar: imageUrl,
+          logo: imageUrl,
         };
-        const result = await addAccountMutation.mutateAsync(body);
+        const result = await addBrandMutation.mutateAsync(body);
         toast({
-          description: "Them tai khoan thành công",
+          description: "Thêm nhãn hàng thành công",
         });
         setOpen(false);
+        reset();
       }
-      await addAccountMutation.mutateAsync(body);
-      toast({
-        description: "Them tai khoan thành công",
-      });
-      setOpen(false);
     } catch (error) {
       handleHttpErrorApi({
         error,
@@ -93,22 +84,22 @@ export default function AddEmployee() {
         <Button size="sm" className="h-7 gap-1">
           <PlusCircle className="h-3.5 w-3.5" />
           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-            Tạo tài khoản
+            Tạo nhãn hàng
           </span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-screen overflow-auto">
         <DialogHeader>
-          <DialogTitle>Tạo tài khoản</DialogTitle>
+          <DialogTitle>Tạo nhãn hàng</DialogTitle>
           <DialogDescription>
-            Các trường tên, email, mật khẩu là bắt buộc
+            Các trường tên, logo là bắt buộc
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
             noValidate
             className="grid auto-rows-max items-start gap-4 md:gap-8"
-            id="add-employee-form"
+            id="add-brand-form"
             onSubmit={form.handleSubmit(onSubmit, (e) => {
               console.log(e);
             })}
@@ -117,14 +108,14 @@ export default function AddEmployee() {
             <div className="grid gap-4 py-4">
               <FormField
                 control={form.control}
-                name="avatar"
+                name="logo"
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex gap-2 items-start justify-start">
                       <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
                         <AvatarImage src={previewAvatarFromFile!} />
                         <AvatarFallback className="rounded-none">
-                          {name || "Avatar"}
+                          {name || "Logo"}
                         </AvatarFallback>
                       </Avatar>
                       <input
@@ -170,103 +161,11 @@ export default function AddEmployee() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="email">Email</Label>
-                      <div className="col-span-3 w-full space-y-2">
-                        <Input id="email" className="w-full" {...field} />
-                        <FormMessage />
-                      </div>
-                    </div>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="phoneNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="phoneNumber">SDT</Label>
-                      <div className="col-span-3 w-full space-y-2">
-                        <Input id="phoneNumber" className="w-full" {...field} />
-                        <FormMessage />
-                      </div>
-                    </div>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="status">Status</Label>
-                      <div className="col-span-3 w-full space-y-2">
-                        <Input
-                          id="status"
-                          className="w-full"
-                          {...field}
-                          value={"ACTIVE"}
-                          readOnly
-                        />
-                        <FormMessage />
-                      </div>
-                    </div>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="roleId"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="roleId">Role</Label>
-                      <div className="col-span-3 w-full space-y-2">
-                        <Input
-                          id="roleId"
-                          className="w-full"
-                          {...field}
-                          value={3}
-                          readOnly
-                        />
-                        <FormMessage />
-                      </div>
-                    </div>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="password">Mật khẩu</Label>
-                      <div className="col-span-3 w-full space-y-2">
-                        <Input
-                          id="password"
-                          className="w-full"
-                          type="password"
-                          {...field}
-                        />
-                        <FormMessage />
-                      </div>
-                    </div>
-                  </FormItem>
-                )}
-              />
             </div>
           </form>
         </Form>
         <DialogFooter>
-          <Button type="submit" form="add-employee-form">
+          <Button type="submit" form="add-brand-form">
             Thêm
           </Button>
         </DialogFooter>

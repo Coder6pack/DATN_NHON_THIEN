@@ -69,6 +69,7 @@ export const checkAndRefreshToken = async (param?: {
   const refreshToken = getRefreshTokenFormLocalStorage();
   // Chưa đăng nhập thì cũng không cho chạy
   if (!accessToken || !refreshToken) return;
+
   const decodedAccessToken = jwt.decode(accessToken) as {
     exp: number;
     iat: number;
@@ -100,3 +101,17 @@ export const checkAndRefreshToken = async (param?: {
     }
   }
 };
+
+export function formatCurrency(currency: number) {
+  return new Intl.NumberFormat("de-DE").format(currency);
+}
+
+export function formatNumberToSocialStyle(value: number) {
+  return new Intl.NumberFormat("en", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  })
+    .format(value)
+    .replace(".", ",")
+    .toLowerCase();
+}
