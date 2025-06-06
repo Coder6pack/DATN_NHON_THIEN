@@ -13,7 +13,7 @@ export function middleware(request: NextRequest) {
   // Chua dang nhap thi khong cho vao private path
   if (privatePaths.some((path) => pathname.startsWith(path)) && !refreshToken) {
     const url = new URL('/login', request.url)
-    url.searchParams.set('clearTokens', 'true')
+    // url.searchParams.set('clearTokens', 'true')
     return NextResponse.redirect(url)
   }
   // Dang nhap roi thi khong cho vao login nua
