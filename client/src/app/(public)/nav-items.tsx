@@ -11,6 +11,8 @@ const menuItems = [
   {
     title: "Trang chủ",
     href: "/",
+    title: "Trang chủ",
+    href: "/",
   },
   {
     title: "Đơn hàng",

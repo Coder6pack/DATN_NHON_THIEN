@@ -1,37 +1,44 @@
-import { Home, LineChart, ShoppingCart, Users2, Salad, Table } from 'lucide-react'
+import {
+  Home,
+  BookImage,
+  ShoppingCart,
+  Users2,
+  ShoppingBasket,
+  Shirt,
+} from "lucide-react";
 
 const menuItems = [
   {
-    title: 'Dashboard',
+    title: "Dashboard",
     Icon: Home,
-    href: '/manage/dashboard'
+    href: "/manage/dashboard",
   },
   {
-    title: 'Đơn hàng',
+    title: "Đơn hàng",
     Icon: ShoppingCart,
-    href: '/manage/orders'
+    href: "/manage/orders",
   },
   {
-    title: 'Bàn ăn',
-    Icon: Table,
-    href: '/manage/tables'
+    title: "Brand",
+    Icon: BookImage,
+    href: "/manage/brands",
   },
   {
-    title: 'Món ăn',
-    Icon: Salad,
-    href: '/manage/dishes'
+    title: "Category",
+    Icon: ShoppingBasket,
+    href: "/manage/categories",
   },
 
   {
-    title: 'Phân tích',
-    Icon: LineChart,
-    href: '/manage/analytics'
+    title: "Product",
+    Icon: Shirt,
+    href: "/manage/products",
   },
   {
-    title: 'Nhân viên',
+    title: "Nhân viên",
     Icon: Users2,
-    href: '/manage/accounts'
-  }
-]
+    href: "/manage/accounts",
+  },
+];
 
-export default menuItems
+export default menuItems;
