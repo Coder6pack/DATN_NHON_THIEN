@@ -1,9 +1,6 @@
 "use client";
 
-import type React from "react";
-
-import { useMemo, useState } from "react";
-import { PlusCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,16 +16,14 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import RichTextEditor from "./components/rich-text-editor";
 import { FormProvider, useForm } from "react-hook-form";
 import {
-  CreateProductBodySchema,
-  CreateProductBodyType,
+  UpdateProductBodySchema,
+  type UpdateProductBodyType,
 } from "@/schemaValidations/product.model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -43,7 +38,10 @@ import InputNumber from "./components/input-number";
 import ImageUpload from "./components/image-update";
 import SkuListField from "./components/sku-list-field";
 import VariantSettingsField from "./components/variant-settings-field";
-import { useAddProductMutation } from "@/app/queries/useProduct";
+import {
+  useGetProduct,
+  useUpdateProductMutation,
+} from "@/app/queries/useProduct";
 import { useUploadFileMediaMutation } from "@/app/queries/useMedia";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -59,15 +57,29 @@ interface SKU {
   stock: number;
   image: string;
 }
+
 async function resolveSkus(skuPromises: Promise<SKU>[]): Promise<SKU[]> {
   return await Promise.all(skuPromises);
 }
-// Main Dialog Component
-export default function AddProduct() {
+
+interface EditProductProps {
+  id?: number | undefined;
+  setId: (value: number | undefined) => void;
+  onSubmitSuccess?: () => void;
+}
+
+export default function EditProduct({
+  id,
+  setId,
+  onSubmitSuccess,
+}: EditProductProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const form = useForm<CreateProductBodyType>({
-    resolver: zodResolver(CreateProductBodySchema),
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+
+  // Always call all hooks in the same order
+  const form = useForm<UpdateProductBodyType>({
+    resolver: zodResolver(UpdateProductBodySchema),
     defaultValues: {
       name: "",
       description: "",
@@ -80,37 +92,153 @@ export default function AddProduct() {
       variants: undefined,
     },
   });
+
   const images = form.watch("images");
   const watchedVariants = form.watch("variants");
   const sKus = form.watch("skus");
 
-  const addProductMutation = useAddProductMutation();
+  // Always call these hooks regardless of id value
+  const {
+    data: productDetail,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetProduct({
+    id: id || 0, // Provide default value instead of conditional
+    enabled: Boolean(id), // Use enabled to control when query runs
+  });
+
+  const updateProductMutation = useUpdateProductMutation();
   const updateMediaMutation = useUploadFileMediaMutation();
   const { data: listBrand } = useListBrand();
-  if (!listBrand) {
-    return;
-  }
-  const getListBrand = listBrand.payload.data.sort((a, b) =>
-    a.name.localeCompare(b.name, "vi", { sensitivity: "base" })
-  );
+
+  // Set open state when id changes
+  useEffect(() => {
+    if (id) {
+      setOpen(true);
+      setIsDataLoaded(false);
+    } else {
+      setOpen(false);
+      setIsDataLoaded(false);
+    }
+  }, [id]);
+
+  // Populate form when product data is loaded
+  useEffect(() => {
+    if (productDetail && !isDataLoaded && id) {
+      const {
+        name,
+        description,
+        brandId,
+        basePrice,
+        virtualPrice,
+        images,
+        skus,
+        variants,
+        categories,
+      } = productDetail.payload;
+
+      // Prepare form data
+      const formData = {
+        name: name || "",
+        description: description || "",
+        brandId: brandId || undefined,
+        basePrice: basePrice || 0,
+        virtualPrice: virtualPrice || 0,
+        images: images || [],
+        skus:
+          skus?.map((sku) => ({
+            value: sku.value || "",
+            price: sku.price || 0,
+            stock: sku.stock || 0,
+            image: sku.image || "",
+          })) || [],
+        variants: variants || [],
+        categories: categories?.map((cat) => cat.id) || [],
+      };
+
+      console.log("Setting form data:", formData);
+
+      // Reset form with new data
+      form.reset(formData);
+      setIsDataLoaded(true);
+    }
+  }, [productDetail, form, isDataLoaded, id]);
+
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      form.reset({
+        name: "",
+        description: "",
+        basePrice: 0,
+        virtualPrice: 0,
+        brandId: undefined,
+        categories: [],
+        images: [],
+        skus: [],
+        variants: [],
+      });
+      setIsDataLoaded(false);
+    }
+  }, [open, form]);
 
   const reset = () => {
-    form.reset();
+    form.reset({
+      name: "",
+      description: "",
+      basePrice: 0,
+      virtualPrice: 0,
+      brandId: undefined,
+      categories: [],
+      images: [],
+      skus: [],
+      variants: [],
+    });
     setOpen(false);
     setIsSubmitting(false);
+    setIsDataLoaded(false);
+    setId(undefined);
   };
-  const onSubmit = async (values: CreateProductBodyType) => {
-    if (addProductMutation.isPending) return;
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      reset();
+    }
+    setOpen(newOpen);
+  };
+
+  const onSubmit = async (values: UpdateProductBodyType) => {
+    if (updateProductMutation.isPending || !id) return;
+
     try {
-      let body = values;
+      setIsSubmitting(true);
+      let body: UpdateProductBodyType & { id: number } = {
+        id,
+        ...values,
+      };
+
       if (images !== undefined && sKus !== undefined) {
-        const formData = await addBlobUrlsToFormData(images);
-        const uploadImageResult = await updateMediaMutation.mutateAsync(
-          formData
-        );
-        const imageUrl = uploadImageResult.payload.data.map((img) => img.url);
+        // Handle image uploads
+        const blobImages = images.filter((img) => img.startsWith("blob:"));
+        const existingImages = images.filter((img) => !img.startsWith("blob:"));
+
+        let imageUrls = [...existingImages];
+
+        if (blobImages.length > 0) {
+          const formData = await addBlobUrlsToFormData(blobImages);
+          const uploadImageResult = await updateMediaMutation.mutateAsync(
+            formData
+          );
+          const newImageUrls = uploadImageResult.payload.data.map(
+            (img) => img.url
+          );
+          imageUrls = [...existingImages, ...newImageUrls];
+        }
+
+        // Handle SKU image uploads
         const skusAddImage = sKus.map(async (sku) => {
-          if (sku.image) {
+          if (sku.image && sku.image.startsWith("blob:")) {
             const formSkuData = await addBlobUrlToFormData(sku.image);
             const uploadImageSkuResult = await updateMediaMutation.mutateAsync(
               formSkuData
@@ -123,52 +251,92 @@ export default function AddProduct() {
           }
           return sku;
         });
+
         const newSkus = await resolveSkus(skusAddImage);
         body = {
-          ...values,
-          images: imageUrl,
+          ...body,
+          images: imageUrls,
           skus: newSkus,
         };
-        const result = await addProductMutation.mutateAsync(body);
-        toast({
-          description: "Create product successfully",
-        });
-        setOpen(false);
-        setIsSubmitting(true);
-        reset();
       }
+
+      await updateProductMutation.mutateAsync(body);
+
+      toast({
+        description: "Update product successfully",
+      });
+
+      reset();
+      onSubmitSuccess?.();
+      refetch();
     } catch (error) {
       handleHttpErrorApi({
         error,
         setError: form.setError,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" className="h-7 gap-1">
-          <PlusCircle className="h-3.5 w-3.5" />
-          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-            Create product
-          </span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-6xl max-h-[90vh] p-0">
-        <DialogHeader>
-          <DialogTitle>Create product</DialogTitle>
-          <DialogDescription>
-            Field name, image, price is require
+
+  // Early return after all hooks have been called
+  if (!listBrand) {
+    return null;
+  }
+
+  const getListBrand = listBrand.payload.data.sort((a, b) =>
+    a.name.localeCompare(b.name, "vi", { sensitivity: "base" })
+  );
+
+  if (isLoading || !isDataLoaded) {
+    return (
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="max-w-6xl max-h-[90vh] p-0">
+          <DialogTitle className="px-6 pt-4">Edit product</DialogTitle>
+          <DialogDescription className="px-6">
+            Update product information
           </DialogDescription>
-        </DialogHeader>
+
+          <div className="flex items-center justify-center h-96">
+            <div className="text-muted-foreground">Loading product data...</div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="max-w-6xl max-h-[90vh] p-0">
+          <DialogTitle className="px-6 pt-4">Edit product</DialogTitle>
+          <DialogDescription className="px-6">
+            Update product information
+          </DialogDescription>
+
+          <div className="flex items-center justify-center h-96">
+            <div className="text-red-500">Error loading product data</div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-6xl max-h-[90vh] p-0">
+        <DialogTitle className="px-6 pt-4">Edit product</DialogTitle>
+        <DialogDescription className="px-6">
+          Update product information
+        </DialogDescription>
+
         <ScrollArea className="max-h-[calc(90vh-80px)]">
           <div className="px-6 py-4">
             <FormProvider {...form}>
               <form
-                id="add-product-form"
+                id="edit-product-form"
                 className="space-y-6"
                 onSubmit={form.handleSubmit(onSubmit)}
-                onReset={reset}
               >
                 <Card>
                   <CardHeader>
@@ -250,7 +418,7 @@ export default function AddProduct() {
                               >
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Chose brand" />
+                                    <SelectValue placeholder="Choose brand" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -312,7 +480,8 @@ export default function AddProduct() {
                     </div>
                   </CardContent>
                 </Card>
-                {/* Hình ảnh sản phẩm */}
+
+                {/* Product Images */}
                 <Card>
                   <CardHeader>
                     <CardTitle>Product images</CardTitle>
@@ -326,7 +495,7 @@ export default function AddProduct() {
                           <FormLabel>Images</FormLabel>
                           <FormControl>
                             <ImageUpload
-                              value={field.value}
+                              value={field.value || []}
                               onChange={field.onChange}
                               maxImages={10}
                             />
@@ -337,7 +506,8 @@ export default function AddProduct() {
                     />
                   </CardContent>
                 </Card>
-                {/* Biến thể sản phẩm */}
+
+                {/* Product Variants */}
                 <Card>
                   <CardHeader>
                     <CardTitle>Product variations</CardTitle>
@@ -350,7 +520,7 @@ export default function AddProduct() {
                         <FormItem>
                           <FormControl>
                             <VariantSettingsField
-                              value={field.value}
+                              value={field.value || []}
                               onChange={field.onChange}
                             />
                           </FormControl>
@@ -360,23 +530,23 @@ export default function AddProduct() {
                     />
                   </CardContent>
                 </Card>
+
+                {/* SKU Management */}
                 <Card>
                   <CardHeader>
                     <CardTitle>Manage SKUs</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {/* FormField mới cho skus */}
                     <FormField
                       control={form.control}
                       name="skus"
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            {/* Component SkuListField mới với variants được truyền vào */}
                             <SkuListField
-                              value={field.value}
+                              value={field.value || []}
                               onChange={field.onChange}
-                              variants={watchedVariants} // Truyền variants từ form
+                              variants={watchedVariants || []}
                             />
                           </FormControl>
                           <FormMessage />
@@ -385,16 +555,17 @@ export default function AddProduct() {
                     />
                   </CardContent>
                 </Card>
+
                 <div className="flex justify-end gap-4 pt-4 border-t">
-                  <Button type="button" variant="outline">
-                    Hủy
+                  <Button type="button" variant="outline" onClick={reset}>
+                    Cancel
                   </Button>
                   <Button
                     type="submit"
-                    form="add-product-form"
+                    form="edit-product-form"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Đang lưu..." : "Lưu sản phẩm"}
+                    {isSubmitting ? "Updating..." : "Update product"}
                   </Button>
                 </div>
               </form>

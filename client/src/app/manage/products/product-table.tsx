@@ -55,6 +55,8 @@ import {
   useListProducts,
 } from "@/app/queries/useProduct";
 import { useGetBrand } from "@/app/queries/useBrand";
+import EditProduct from "./edit-product";
+// import EditProduct from "./edit-product";
 
 const ProductTableContext = createContext<{
   setProductIdEdit: (value: number) => void;
@@ -75,7 +77,7 @@ export const columns: ColumnDef<ProductType>[] = [
   },
   {
     accessorKey: "name",
-    header: "Tên",
+    header: "Name",
     cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
   },
   {
@@ -149,7 +151,6 @@ export const columns: ColumnDef<ProductType>[] = [
           updatedById: null,
         });
       };
-
       return (
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
@@ -284,11 +285,11 @@ export default function ProductTable() {
       }}
     >
       <div className="w-full">
-        {/* <EditCategory
-          id={categoryIdEdit}
-          setId={setCategoryIdEdit}
+        <EditProduct
+          id={productIdEdit}
+          setId={setProductIdEdit}
           onSubmitSuccess={() => {}}
-        /> */}
+        />
         <AlertDialogDeleteProduct
           productDelete={productDelete}
           setProductDelete={setProductDelete}

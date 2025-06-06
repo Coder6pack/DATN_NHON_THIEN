@@ -92,7 +92,6 @@ export default function EditCategory({
       body = {
         ...body,
       };
-      console.log(body);
       const result = await updateCategoryMutation.mutateAsync(body);
       toast({
         description: "Update category successfully",

@@ -22,7 +22,7 @@ import {
   ImageIcon,
   Highlighter,
 } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 interface RichTextEditorProps {
   content: string;
@@ -63,7 +63,12 @@ export default function RichTextEditor({
     },
     immediatelyRender: false,
   });
-
+  // Update editor content when content prop changes
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content);
+    }
+  }, [editor, content]);
   const addLink = useCallback(() => {
     const previousUrl = editor?.getAttributes("link").href;
     const url = window.prompt("URL", previousUrl);

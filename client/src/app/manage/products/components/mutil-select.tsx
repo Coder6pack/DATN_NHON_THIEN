@@ -1,5 +1,6 @@
 import { useListCategories } from "@/app/queries/useCategory";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -14,25 +15,27 @@ export default function MultiSelectCategory({
   value = [],
   onChange,
 }: {
-  value: number[];
+  value?: number[] | undefined;
   onChange: (value: number[]) => void;
 }) {
   const [currentCategory, setCurrentCategory] = useState<string>("");
   const { data } = useListCategories();
   if (!data) {
-    return;
+    return null;
   }
-  const categories = data.payload.data;
+  const categories = data.payload.data.sort((a, b) =>
+    a.name.localeCompare(b.name, "vi", { sensitivity: "base" })
+  );
   const handleAddCategory = (categoryId: string) => {
     const numericId = Number.parseInt(categoryId, 10);
     if (categoryId && !value?.includes(numericId)) {
-      onChange([...value, numericId]);
+      onChange([...(value || []), numericId]);
       setCurrentCategory("");
     }
   };
 
   const removeCategory = (categoryId: number) => {
-    onChange(value.filter((id) => id !== categoryId));
+    onChange((value || []).filter((id) => id !== categoryId));
   };
 
   const getSelectedCategoryNames = () => {
@@ -49,22 +52,24 @@ export default function MultiSelectCategory({
     <div className="space-y-2">
       <Select value={currentCategory} onValueChange={handleAddCategory}>
         <SelectTrigger>
-          <SelectValue placeholder="Chọn danh mục..." />
+          <SelectValue placeholder="Chose categories..." />
         </SelectTrigger>
-        <SelectContent>
-          {getAvailableCategories().map((category) => (
-            <SelectItem key={category.id} value={category.id.toString()}>
-              {category.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
+        <ScrollArea>
+          <SelectContent>
+            {getAvailableCategories().map((category) => (
+              <SelectItem key={category.id} value={category.id.toString()}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </ScrollArea>
       </Select>
 
       {/* Selected Categories Display */}
-      {value.length > 0 && (
+      {value && value.length > 0 && (
         <div className="border rounded-md p-3 bg-muted/30">
           <div className="text-sm font-medium text-muted-foreground mb-2">
-            Danh mục đã chọn:
+            Categories chose:
           </div>
           <div className="flex flex-wrap gap-2">
             {getSelectedCategoryNames().map((category) => (

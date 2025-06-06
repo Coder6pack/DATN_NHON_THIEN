@@ -24,7 +24,12 @@ export const CreateCategoryBodySchema = CategorySchema.pick({
 	parentCategoryId: true,
 }).strict()
 
-export const UpdateCategoryBodySchema = CreateCategoryBodySchema
+export const UpdateCategoryBodySchema = z
+	.object({
+		name: z.string(),
+		logo: z.string().nullable(),
+	})
+	.strict()
 
 export type CategoryType = z.infer<typeof CategorySchema>
 export type GetAllCategoriesResType = z.infer<typeof GetAllCategoriesResSchema>
