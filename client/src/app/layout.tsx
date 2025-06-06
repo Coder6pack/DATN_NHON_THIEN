@@ -11,8 +11,8 @@ const fontSans = FontSans({
   variable: "--font-sans",
 });
 export const metadata: Metadata = {
-  title: "Big Boy Restaurant",
-  description: "The best restaurant in the world",
+  title: "Nhon Thien Fashion",
+  description: "The best Fashion store in Viet Nam",
 };
 
 export default function RootLayout({

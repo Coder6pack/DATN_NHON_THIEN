@@ -1,6 +1,6 @@
 import { authApiRequest } from "@/app/apiRequests/auth";
 import { HttpError } from "@/lib/http";
-import { decodeExpiresToken, removeTokensFromLocalStorage } from "@/lib/utils";
+import { decodeExpiresToken } from "@/lib/utils";
 import { RefreshTokenPayload } from "@/types/token.type";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
@@ -40,8 +40,6 @@ export async function POST(request: Request) {
     const { payload } = await authApiRequest.sRefreshToken({
       refreshToken,
     });
-    console.log(refreshToken);
-    console.log(payload);
     const { accessToken, refreshToken: newRefreshToken } = payload;
     const decodedAccessToken = jwt.decode(accessToken) as RefreshTokenPayload;
     const decodedRefreshToken = jwt.decode(
@@ -68,7 +66,6 @@ export async function POST(request: Request) {
         status: error.status,
       });
     } else {
-      // console.log(error);
       return new Response("Lỗi hệ thống", {
         status: 401,
       });

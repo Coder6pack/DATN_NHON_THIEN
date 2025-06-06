@@ -3,7 +3,11 @@ import {
   ChangePasswordBodyType,
   UpdateMeBodyType,
 } from "@/schemaValidations/profile.model";
-import { GetUsersResType } from "@/schemaValidations/user.model";
+import {
+  CreateUserBodyType,
+  GetUsersResType,
+  UpdateUserBodyType,
+} from "@/schemaValidations/user.model";
 import { MessageResType } from "@/shared/models/response.model";
 import {
   GetProfileType,
@@ -23,6 +27,12 @@ const accountApiRequest = {
   changePassword: (body: ChangePasswordBodyType) =>
     http.put<MessageResType>("/profile/change-password", body),
   listAccount: () => http.get<GetUsersResType>("/user"),
+  addAccount: (body: CreateUserBodyType) =>
+    http.post<UpdateUserProfileResType>("/user", body),
+  updateAccount: (id: number, body: UpdateUserBodyType) =>
+    http.put<UpdateUserProfileResType>(`/user/${id}`, body),
+  getAccount: (id: number) => http.get<UpdateUserProfileResType>(`/user/${id}`),
+  deleteAccount: (id: number) => http.delete(`/user/${id}`),
 };
 
 export default accountApiRequest;

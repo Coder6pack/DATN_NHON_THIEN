@@ -69,6 +69,7 @@ export const checkAndRefreshToken = async (param?: {
   const refreshToken = getRefreshTokenFormLocalStorage();
   // Chưa đăng nhập thì cũng không cho chạy
   if (!accessToken || !refreshToken) return;
+
   const decodedAccessToken = jwt.decode(accessToken) as {
     exp: number;
     iat: number;
@@ -100,3 +101,68 @@ export const checkAndRefreshToken = async (param?: {
     }
   }
 };
+
+export function formatCurrency(currency: number) {
+  return new Intl.NumberFormat("de-DE").format(currency);
+}
+
+export function formatNumberToSocialStyle(value: number) {
+  return new Intl.NumberFormat("en", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  })
+    .format(value)
+    .replace(".", ",")
+    .toLowerCase();
+}
+
+async function convertBlobUrlsToFileArray(
+  blobUrls: string[],
+  fileNamePrefix: string = "file"
+): Promise<File[]> {
+  const filePromises = blobUrls.map(async (url, index) => {
+    // Lấy Blob từ URL blob
+    const response = await fetch(url);
+    const blob = await response.blob();
+    // Tạo tên tệp động (hoặc lấy từ metadata nếu có)
+    const fileName = `${fileNamePrefix}${index}.${
+      blob.type.split("/")[1] || "bin"
+    }`;
+    // Tạo File từ Blob
+    return new File([blob], fileName, { type: blob.type });
+  });
+  // Chờ tất cả các promise hoàn thành
+  return Promise.all(filePromises);
+}
+export async function addBlobUrlsToFormData(
+  blobUrls: string[]
+): Promise<FormData> {
+  const formData = new FormData();
+  const fileArray = await convertBlobUrlsToFileArray(blobUrls);
+  fileArray.forEach((file) => {
+    formData.append(`files`, file, file.name);
+  });
+  return formData;
+}
+
+async function convertBlobUrlToFileArray(
+  blobUrl: string,
+  fileName: string = "files"
+): Promise<File[]> {
+  const response = await fetch(blobUrl);
+  const blob = await response.blob();
+  const extension = blob.type.split("/")[1] || "bin";
+  const finalFileName = `${fileName}.${extension}`;
+  const file = new File([blob], finalFileName, { type: blob.type });
+  return [file];
+}
+export async function addBlobUrlToFormData(
+  blobUrls: string
+): Promise<FormData> {
+  const formData = new FormData();
+  const fileArray = await convertBlobUrlToFileArray(blobUrls);
+  fileArray.forEach((file) => {
+    formData.append(`files`, file, file.name);
+  });
+  return formData;
+}

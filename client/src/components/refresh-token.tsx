@@ -32,7 +32,6 @@ export default function RefreshToken() {
       TIMEOUT
     );
     return () => {
-      console.log(1);
       clearInterval(interval);
     };
   }, [pathname, router]);

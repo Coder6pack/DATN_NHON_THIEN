@@ -1,6 +1,5 @@
 "use client";
 
-import { CaretSortIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -14,16 +13,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import { Button } from "@/components/ui/button";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -33,9 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import AddEmployee from "@/app/manage/accounts/add-employee";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import EditEmployee from "@/app/manage/accounts/edit-employee";
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   AlertDialog,
@@ -49,40 +36,57 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useSearchParams } from "next/navigation";
 import AutoPagination from "@/components/auto-pagination";
-import { AccountType, GetUsersResType } from "@/schemaValidations/user.model";
-import { GetProfileType } from "@/shared/models/shared-user.model";
-import {
-  useDeleteAccountMutation,
-  useListAccount,
-} from "@/app/queries/useAccount";
 import { handleHttpErrorApi } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import EditBrand from "./edit-brand";
+import AddBrand from "./add-brand";
+import { useDeleteBrandMutation, useListBrand } from "@/app/queries/useBrand";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { GetBrandsResType } from "@/schemaValidations/brand.model";
+import { BrandType } from "@/shared/models/shared-brand.model";
 
-type AccountItem = GetUsersResType["data"][0];
-const AccountTableContext = createContext<{
-  setEmployeeIdEdit: (value: number) => void;
-  employeeIdEdit: number | undefined;
-  employeeDelete: AccountItem | null;
-  setEmployeeDelete: (value: AccountItem | null) => void;
+const BrandTableContext = createContext<{
+  setBrandIdEdit: (value: number) => void;
+  brandIdEdit: number | undefined;
+  brandDelete: BrandType | null;
+  setBrandDelete: (value: BrandType | null) => void;
 }>({
-  setEmployeeIdEdit: (value: number | undefined) => {},
-  employeeIdEdit: undefined,
-  employeeDelete: null,
-  setEmployeeDelete: (value: AccountItem | null) => {},
+  setBrandIdEdit: (value: number | undefined) => {},
+  brandIdEdit: undefined,
+  brandDelete: null,
+  setBrandDelete: (value: BrandType | null) => {},
 });
 
-export const columns: ColumnDef<AccountType>[] = [
+export const columns: ColumnDef<BrandType>[] = [
   {
     accessorKey: "id",
     header: "ID",
   },
   {
-    accessorKey: "avatar",
-    header: "Avatar",
+    accessorKey: "name",
+    header: "Tên",
+    cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
+  },
+  {
+    accessorKey: "logo",
+    header: "Logo",
     cell: ({ row }) => (
       <div>
         <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
-          <AvatarImage src={row.getValue("avatar")} />
+          <AvatarImage
+            src={row.getValue("logo")}
+            width={"100px"}
+            height={"100px"}
+          />
           <AvatarFallback className="rounded-none">
             {row.original.name}
           </AvatarFallback>
@@ -91,70 +95,33 @@ export const columns: ColumnDef<AccountType>[] = [
     ),
   },
   {
-    accessorKey: "name",
-    header: "Tên",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
-  },
-  {
-    accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Email
-          <CaretSortIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
+    accessorKey: "createdAt",
+    header: "Created At",
+    cell: ({ row }) => {
+      const createdAt = row.original.createdAt;
+      // Kiểm tra và chuyển đổi
+      const date = createdAt instanceof Date ? createdAt : new Date(createdAt);
+      return <div>{date.toLocaleDateString()}</div>;
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
-  },
-  {
-    accessorKey: "phoneNumber",
-    header: "Phone number",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("phoneNumber")}</div>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
-    ),
-  },
-  {
-    accessorKey: "roleId",
-    header: "Role id",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("roleId")}</div>
-    ),
   },
   {
     id: "actions",
     enableHiding: false,
     cell: function Actions({ row }) {
-      const { setEmployeeIdEdit, setEmployeeDelete } =
-        useContext(AccountTableContext);
+      const { setBrandIdEdit, setBrandDelete } = useContext(BrandTableContext);
       const openEditEmployee = () => {
-        setEmployeeIdEdit(row.original.id);
+        setBrandIdEdit(row.original.id);
       };
 
-      const openDeleteEmployee = () => {
-        setEmployeeDelete({
-          address: null,
-          createdById: null,
-          updatedById: null,
-          deletedById: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          deletedAt: new Date(),
-          role: {
-            id: row.original.roleId,
-            name: "",
-          },
+      const openDeleteBrand = () => {
+        setBrandDelete({
           ...row.original,
+          createdAt: new Date(),
+          createdById: null,
+          deletedAt: new Date(),
+          deletedById: null,
+          updatedAt: new Date(),
+          updatedById: null,
         });
       };
 
@@ -170,9 +137,7 @@ export const columns: ColumnDef<AccountType>[] = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={openEditEmployee}>Sửa</DropdownMenuItem>
-            <DropdownMenuItem onClick={openDeleteEmployee}>
-              Xóa
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={openDeleteBrand}>Xóa</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -180,21 +145,21 @@ export const columns: ColumnDef<AccountType>[] = [
   },
 ];
 
-function AlertDialogDeleteAccount({
-  employeeDelete,
-  setEmployeeDelete,
+function AlertDialogDeleteBrand({
+  brandDelete,
+  setBrandDelete,
 }: {
-  employeeDelete: AccountItem | null;
-  setEmployeeDelete: (value: AccountItem | null) => void;
+  brandDelete: BrandType | null;
+  setBrandDelete: (value: BrandType | null) => void;
 }) {
-  const { mutateAsync } = useDeleteAccountMutation();
-  const deleteAccount = async () => {
-    if (employeeDelete) {
+  const { mutateAsync } = useDeleteBrandMutation();
+  const deleteBrand = async () => {
+    if (brandDelete) {
       try {
-        const result = await mutateAsync(employeeDelete.id);
-        setEmployeeDelete(null);
+        const result = await mutateAsync(brandDelete.id);
+        setBrandDelete(null);
         toast({
-          title: "Delete account successfully",
+          title: "Delete brand successfully",
         });
       } catch (error) {
         handleHttpErrorApi({
@@ -205,29 +170,27 @@ function AlertDialogDeleteAccount({
   };
   return (
     <AlertDialog
-      open={Boolean(employeeDelete)}
+      open={Boolean(brandDelete)}
       onOpenChange={(value) => {
         if (!value) {
-          setEmployeeDelete(null);
+          setBrandDelete(null);
         }
       }}
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Xóa nhân viên?</AlertDialogTitle>
+          <AlertDialogTitle>Xóa nhãn hàng?</AlertDialogTitle>
           <AlertDialogDescription>
-            Tài khoản{" "}
+            Nhãn hàng{" "}
             <span className="bg-foreground text-primary-foreground rounded px-1">
-              {employeeDelete?.name}
+              {brandDelete?.name}
             </span>{" "}
             sẽ bị xóa vĩnh viễn
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={deleteAccount}>
-            Continue
-          </AlertDialogAction>
+          <AlertDialogAction onClick={deleteBrand}>Continue</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -235,17 +198,15 @@ function AlertDialogDeleteAccount({
 }
 // Số lượng item trên 1 trang
 const PAGE_SIZE = 10;
-export default function AccountTable() {
-  const getAccounts = useListAccount();
-  const data = getAccounts.data?.payload.data ?? [];
+export default function BrandTable() {
+  const getBrands = useListBrand();
+  const data = getBrands.data?.payload.data ?? [];
   const searchParam = useSearchParams();
   const page = searchParam.get("page") ? Number(searchParam.get("page")) : 1;
   const pageIndex = page - 1;
   // const params = Object.fromEntries(searchParam.entries())
-  const [employeeIdEdit, setEmployeeIdEdit] = useState<number | undefined>();
-  const [employeeDelete, setEmployeeDelete] = useState<AccountItem | null>(
-    null
-  );
+  const [brandIdEdit, setBrandIdEdit] = useState<number | undefined>();
+  const [brandDelete, setBrandDelete] = useState<BrandType | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -285,35 +246,35 @@ export default function AccountTable() {
   }, [table, pageIndex]);
 
   return (
-    <AccountTableContext.Provider
+    <BrandTableContext.Provider
       value={{
-        employeeIdEdit,
-        setEmployeeIdEdit,
-        employeeDelete,
-        setEmployeeDelete,
+        brandIdEdit,
+        setBrandIdEdit,
+        brandDelete,
+        setBrandDelete,
       }}
     >
       <div className="w-full">
-        <EditEmployee
-          id={employeeIdEdit}
-          setId={setEmployeeIdEdit}
+        <EditBrand
+          id={brandIdEdit}
+          setId={setBrandIdEdit}
           onSubmitSuccess={() => {}}
         />
-        <AlertDialogDeleteAccount
-          employeeDelete={employeeDelete}
-          setEmployeeDelete={setEmployeeDelete}
+        <AlertDialogDeleteBrand
+          brandDelete={brandDelete}
+          setBrandDelete={setBrandDelete}
         />
         <div className="flex items-center py-4">
           <Input
-            placeholder="Filter emails..."
-            value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+            placeholder="Filter name..."
+            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
-              table.getColumn("email")?.setFilterValue(event.target.value)
+              table.getColumn("name")?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
           <div className="ml-auto flex items-center gap-2">
-            <AddEmployee />
+            <AddBrand />
           </div>
         </div>
         <div className="rounded-md border">
@@ -376,11 +337,11 @@ export default function AccountTable() {
             <AutoPagination
               page={table.getState().pagination.pageIndex + 1}
               pageSize={table.getPageCount()}
-              pathname="/manage/accounts"
+              pathname="/manage/brand"
             />
           </div>
         </div>
       </div>
-    </AccountTableContext.Provider>
+    </BrandTableContext.Provider>
   );
 }

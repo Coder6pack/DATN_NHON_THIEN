@@ -7,8 +7,8 @@ import { useEffect, useState } from "react";
 
 const menuItems = [
   {
-    title: "Món ăn",
-    href: "/menu",
+    title: "Trang chủ",
+    href: "/",
   },
   {
     title: "Đơn hàng",
@@ -28,7 +28,7 @@ const menuItems = [
 ];
 
 export default function NavItems({ className }: { className?: string }) {
-  const { isAuth } = useAppContext()
+  const { isAuth } = useAppContext();
   return menuItems.map((item) => {
     if (
       (item.authRequired === false && isAuth) ||
