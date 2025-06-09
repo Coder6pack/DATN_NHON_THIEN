@@ -4,6 +4,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -19,18 +20,19 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { LoginBodySchema, LoginBodyType } from "@/schemaValidations/auth.model";
 import { useAppContext } from "@/components/app-provider";
 import { useEffect } from "react";
+import Link from "next/link";
 
 export default function LoginForm() {
   const loginMutation = useLoginMutation();
-  const searchParams = useSearchParams()
-  const clearTokens = searchParams.get('clearTokens')
-  const { setIsAuth } = useAppContext()
+  const searchParams = useSearchParams();
+  const clearTokens = searchParams.get("clearTokens");
+  const { setIsAuth } = useAppContext();
   const route = useRouter();
   useEffect(() => {
     if (clearTokens) {
-      setIsAuth(false)
+      setIsAuth(false);
     }
-  }, [clearTokens, setIsAuth])
+  }, [clearTokens, setIsAuth]);
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBodySchema),
     defaultValues: {
@@ -46,7 +48,7 @@ export default function LoginForm() {
       toast({
         description: "Login successfully",
       });
-      setIsAuth(true)
+      setIsAuth(true);
       route.push("/manage/dashboard");
     } catch (error) {
       handleHttpErrorApi({ error, setError: form.setError });
@@ -120,6 +122,17 @@ export default function LoginForm() {
           </form>
         </Form>
       </CardContent>
+      <CardFooter className="flex flex-col space-y-4">
+        <div className="text-center text-sm">
+          Already have an account?{" "}
+          <Link
+            href="/register"
+            className="text-primary underline-offset-4 hover:underline"
+          >
+            Sign up
+          </Link>
+        </div>
+      </CardFooter>
     </Card>
   );
 }

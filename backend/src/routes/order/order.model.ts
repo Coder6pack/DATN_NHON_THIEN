@@ -64,6 +64,14 @@ export const GetOrderParamsSchema = z
 	})
 	.strict()
 
+export const UpdateOrderBodySchema = OrderSchema.pick({
+	status: true,
+})
+
+export const UpdateOrderResSchema = GetOrderDetailResSchema
+
+export type UpdateOrderResType = GetOrderDetailResType
+export type UpdateOrderBodyType = z.infer<typeof UpdateOrderBodySchema>
 export type GetOrderListResType = z.infer<typeof GetOrderListResSchema>
 export type GetOrderListQueryType = z.infer<typeof GetOrderListQuerySchema>
 export type GetOrderDetailResType = z.infer<typeof GetOrderDetailResSchema>

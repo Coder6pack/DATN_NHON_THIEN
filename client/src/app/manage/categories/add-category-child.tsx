@@ -42,9 +42,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import SingleSelectCategory from "./single-select";
 
-export default function AddCategory() {
+export default function AddCategoryChild() {
   const [file, setFile] = useState<File | null>(null);
   const [open, setOpen] = useState(false);
   const addCategoryMutation = useAddCategoryMutation();
@@ -56,7 +55,7 @@ export default function AddCategory() {
     defaultValues: {
       name: "",
       logo: "",
-      parentCategoryId: undefined,
+      parentCategoryId: null,
     },
   });
   if (!listCategories) {
@@ -195,13 +194,23 @@ export default function AddCategory() {
                 name="parentCategoryId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category</FormLabel>
+                    <FormLabel>Categories</FormLabel>
                     <FormControl>
-                      <SingleSelectCategory
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="Choose category..."
-                      />
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value?.toString()}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Chose parent category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((cate) => (
+                            <SelectItem value={cate.id.toString()}>
+                              {cate.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

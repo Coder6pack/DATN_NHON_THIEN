@@ -16,7 +16,6 @@ export class CategoryRepo {
 		const categories = await this.prismaService.category.findMany({
 			where: {
 				deletedAt: null,
-				parentCategoryId: parentCategoryId ?? null,
 			},
 			orderBy: {
 				createdAt: 'desc',

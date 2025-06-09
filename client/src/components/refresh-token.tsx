@@ -1,39 +1,50 @@
 "use client";
 import { checkAndRefreshToken } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-// Những page sau sẽ không check refesh token
-const UNAUTHENTICATED_PATH = ["/login", "/logout", "/refresh-token"];
+const UNAUTHENTICATED_PATH = [
+  "/login",
+  "/logout",
+  "/refresh-token",
+  "/register",
+];
+
 export default function RefreshToken() {
   const pathname = usePathname();
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     if (UNAUTHENTICATED_PATH.includes(pathname)) return;
-    let interval: any = null;
-    // Phải gọi lần đầu tiên, vì interval sẽ chạy sau thời gian TIMEOUT
-    checkAndRefreshToken({
-      onError: () => {
-        clearInterval(interval);
-        router.push("/login");
-      },
-    });
-    // Timeout interval phải bé hơn thời gian hết hạn của access token
-    // Ví dụ thời gian hết hạn access token là 10s thì 1s mình sẽ cho check 1 lần
-    const TIMEOUT = 1000;
-    interval = setInterval(
-      () =>
-        checkAndRefreshToken({
-          onError: () => {
-            clearInterval(interval);
-            router.push("/login");
-          },
-        }),
-      TIMEOUT
-    );
+
+    let interval: NodeJS.Timeout | null = null;
+
+    const refresh = () => {
+      checkAndRefreshToken({
+        onSuccess: ({ accessToken, refreshToken }) => {
+          console.log("Tokens refreshed successfully");
+        },
+        onError: () => {
+          setError("Failed to refresh token");
+          if (interval) clearInterval(interval);
+          router.push("/login");
+        },
+      });
+    };
+
+    refresh(); // Gọi lần đầu
+    const TIMEOUT = 540000; // 9 phút, giả sử accessToken sống 10 phút
+    interval = setInterval(refresh, TIMEOUT);
+
     return () => {
-      clearInterval(interval);
+      if (interval) clearInterval(interval);
     };
   }, [pathname, router]);
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return null;
 }

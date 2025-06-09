@@ -14,6 +14,7 @@ import {
 	GetOrderDetailResType,
 	GetOrderListQueryType,
 	GetOrderListResType,
+	UpdateOrderBodyType,
 } from 'src/routes/order/order.model'
 import { OrderProducer } from 'src/routes/order/order.producer'
 import { PaymentStatus } from 'src/shared/constants/payment.constant'
@@ -222,6 +223,35 @@ export class OrderRepo {
 				},
 				data: {
 					status: OrderStatus.CANCELLED,
+					updatedById: userId,
+				},
+			})
+			return updatedOrder
+		} catch (error) {
+			if (isNotFoundPrismaError(error)) {
+				throw OrderNotFoundException
+			}
+			throw error
+		}
+	}
+
+	async update({ userId, orderId, body }: { userId: number; orderId: number; body: UpdateOrderBodyType }) {
+		try {
+			const order = await this.prismaService.order.findUniqueOrThrow({
+				where: {
+					id: orderId,
+					userId,
+					deletedAt: null,
+				},
+			})
+			const updatedOrder = await this.prismaService.order.update({
+				where: {
+					id: orderId,
+					userId,
+					deletedAt: null,
+				},
+				data: {
+					status: body.status,
 					updatedById: userId,
 				},
 			})
