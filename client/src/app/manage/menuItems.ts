@@ -5,6 +5,7 @@ import {
   Users2,
   ShoppingBasket,
   Shirt,
+  Images,
 } from "lucide-react";
 
 const menuItems = [
@@ -28,14 +29,18 @@ const menuItems = [
     Icon: ShoppingBasket,
     href: "/manage/categories",
   },
-
   {
     title: "Product",
     Icon: Shirt,
     href: "/manage/products",
   },
   {
-    title: "Nhân viên",
+    title: "Slide show",
+    Icon: Images,
+    href: "/manage/slide-show",
+  },
+  {
+    title: "Employee",
     Icon: Users2,
     href: "/manage/accounts",
   },
