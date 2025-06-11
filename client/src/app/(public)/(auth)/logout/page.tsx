@@ -3,8 +3,8 @@
 import { useLogoutMutation } from "@/app/queries/useAuth";
 import { useAppContext } from "@/components/app-provider";
 import {
-  getAccessTokenFormLocalStorage,
-  getRefreshTokenFormLocalStorage,
+  getAccessTokenFromLocalStorage,
+  getRefreshTokenFromLocalStorage,
 } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef } from "react";
@@ -21,9 +21,9 @@ function Logout() {
     if (
       !ref.current &&
       ((refreshTokenFromUrl &&
-        refreshTokenFromUrl === getRefreshTokenFormLocalStorage()) ||
+        refreshTokenFromUrl === getRefreshTokenFromLocalStorage()) ||
         (accessTokenFromUrl &&
-          accessTokenFromUrl === getAccessTokenFormLocalStorage()))
+          accessTokenFromUrl === getAccessTokenFromLocalStorage()))
     ) {
       ref.current = mutateAsync;
       mutateAsync().then((res) => {
@@ -37,6 +37,7 @@ function Logout() {
       router.push("/");
     }
   }, [refreshTokenFromUrl, mutateAsync, router, accessTokenFromUrl]);
+
   return <div>Logging out...</div>;
 }
 export default function LogoutPage() {

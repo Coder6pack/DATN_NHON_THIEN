@@ -55,6 +55,9 @@ model User {
   createdSKUS        SKU[]          @relation("SKUCreatedBy")
   deletedSKUS        SKU[]          @relation("SKUDeletedBy")
   updatedSKUS        SKU[]          @relation("SKUUpdatedBy")
+  createdSlideShows  SlideShow[]    @relation("SlideShowCreatedBy")
+  deletedSlideShows  SlideShow[]    @relation("SlideShowDeletedBy")
+  updatedSlideShows  SlideShow[]    @relation("SlideShowUpdatedBy")
   createdBy          User?          @relation("CreatorUsers", fields: [createdById], references: [id], onUpdate: NoAction)
   createdUsers       User[]         @relation("CreatorUsers")
   deletedBy          User?          @relation("DeletorUsers", fields: [deletedById], references: [id], onUpdate: NoAction)
@@ -177,6 +180,7 @@ model Category {
   id                 Int        @id @default(autoincrement())
   name               String     @db.VarChar(500)
   logo               String?    @db.VarChar(1000)
+  isHot              Boolean?
   parentCategoryId   Int?
   createdById        Int?
   updatedById        Int?
@@ -344,6 +348,22 @@ model Message {
   createdAt  DateTime  @default(now())
   fromUser   User      @relation("FromUser", fields: [fromUserId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   toUser     User      @relation("ToUser", fields: [toUserId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model SlideShow{
+  id                  Int                  @id @default(autoincrement())
+  image              String
+  createdById         Int
+  updatedById         Int?
+  deletedById         Int?
+  deletedAt           DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  createdBy           User                 @relation("SlideShowCreatedBy", fields: [createdById], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  deletedBy           User?                @relation("SlideShowDeletedBy", fields: [deletedById], references: [id], onUpdate: NoAction)
+  updatedBy           User?                @relation("SlideShowUpdatedBy", fields: [updatedById], references: [id], onUpdate: NoAction)
+
+  @@index([deletedAt])
 }
 
 enum PaymentStatus {

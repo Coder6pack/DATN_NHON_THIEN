@@ -38,7 +38,6 @@ import { useSearchParams } from "next/navigation";
 import AutoPagination from "@/components/auto-pagination";
 import { handleHttpErrorApi } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-import { useListBrand } from "@/app/queries/useBrand";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,6 +55,7 @@ import {
   useDeleteCategoryMutation,
   useListCategories,
 } from "@/app/queries/useCategory";
+import AddCategoryChild from "./add-category-child";
 
 const CategoryTableContext = createContext<{
   setCategoryIdEdit: (value: number) => void;
@@ -95,6 +95,13 @@ export const columns: ColumnDef<CategoryType>[] = [
           </AvatarFallback>
         </Avatar>
       </div>
+    ),
+  },
+  {
+    accessorKey: "parentCategoryId",
+    header: "Parent ID",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("parentCategoryId")}</div>
     ),
   },
   {
@@ -198,7 +205,10 @@ function AlertDialogDeleteCategory({
 const PAGE_SIZE = 10;
 export default function CategoryTable() {
   const getCategories = useListCategories();
-  const data = getCategories.data?.payload.data ?? [];
+  const sortCategories = getCategories.data?.payload.data.sort((a, b) =>
+    a.name.localeCompare(b.name, "vi", { sensitivity: "base" })
+  );
+  const data = sortCategories ?? [];
   const searchParam = useSearchParams();
   const page = searchParam.get("page") ? Number(searchParam.get("page")) : 1;
   const pageIndex = page - 1;
@@ -275,6 +285,7 @@ export default function CategoryTable() {
           />
           <div className="ml-auto flex items-center gap-2">
             <AddCategory />
+            <AddCategoryChild />
           </div>
         </div>
         <div className="rounded-md border">

@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Suspense } from "react";
-import BrandTable from "./category-table";
+import CategoryTable from "./category-table";
 
 export default function Dashboard() {
   return (
@@ -15,12 +15,12 @@ export default function Dashboard() {
         <Card x-chunk="dashboard-06-chunk-0">
           <CardHeader>
             <CardTitle>Category</CardTitle>
-            <CardDescription>Quản lý Category</CardDescription>
+            <CardDescription>Manage Category</CardDescription>
           </CardHeader>
           <CardContent>
             <Suspense>
               <Suspense>
-                <BrandTable />
+                <CategoryTable />
               </Suspense>
             </Suspense>
           </CardContent>

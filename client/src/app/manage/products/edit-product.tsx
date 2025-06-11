@@ -33,7 +33,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import MultiSelectCategory from "./components/mutil-select";
+import MultiSelectCategory from "../../../components/mutil-select";
 import InputNumber from "./components/input-number";
 import ImageUpload from "./components/image-update";
 import SkuListField from "./components/sku-list-field";

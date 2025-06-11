@@ -5,6 +5,9 @@ import {
   LogoutBodyType,
   RefreshTokenBodyType,
   RefreshTokenResType,
+  RegisterBodyType,
+  RegisterResType,
+  SendOPTBodyType,
 } from "@/schemaValidations/auth.model";
 
 export const authApiRequest = {
@@ -53,4 +56,10 @@ export const authApiRequest = {
     this.refreshTokenRequest = null;
     return result;
   },
+
+  async register(body: RegisterBodyType) {
+    return http.post<RegisterResType>("/auth/register", body);
+  },
+
+  sendOTP: (body: SendOPTBodyType) => http.post("/auth/otp", body),
 };

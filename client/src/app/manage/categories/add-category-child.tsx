@@ -14,8 +14,15 @@ import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle, Upload } from "lucide-react";
 import { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { FormProvider, useForm } from "react-hook-form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUploadFileMediaMutation } from "@/app/queries/useMedia";
 import { toast } from "@/hooks/use-toast";
@@ -28,12 +35,21 @@ import {
   CreateCategoryBodySchema,
   CreateCategoryBodyType,
 } from "@/schemaValidations/category.model";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-export default function AddCategory() {
+export default function AddCategoryChild() {
   const [file, setFile] = useState<File | null>(null);
   const [open, setOpen] = useState(false);
+  const [selectedValue, setSelectedValue] = useState<number | null>(null);
   const addCategoryMutation = useAddCategoryMutation();
   const updateMediaMutation = useUploadFileMediaMutation();
+  const { data: listCategories } = useListCategories();
   const logoInputRef = useRef<HTMLInputElement | null>(null);
   const form = useForm<CreateCategoryBodyType>({
     resolver: zodResolver(CreateCategoryBodySchema),
@@ -43,11 +59,22 @@ export default function AddCategory() {
       parentCategoryId: null,
     },
   });
-
+  if (!listCategories) {
+    return;
+  }
+  const categories = listCategories.payload.data
+    .filter((category) => category.parentCategoryId === null)
+    .sort((a, b) =>
+      a.name.localeCompare(b.name, "vi", { sensitivity: "base" })
+    );
   const name = form.watch("name");
   const previewAvatarFromFile = file ? URL.createObjectURL(file) : null;
   const reset = () => {
-    form.reset();
+    form.reset({
+      logo: "",
+      name: "",
+      parentCategoryId: null,
+    });
     setFile(null);
   };
   const onSubmit = async (values: CreateCategoryBodyType) => {
@@ -61,11 +88,13 @@ export default function AddCategory() {
           formData
         );
         const imageUrl = uploadImageResult.payload.data[0].url;
+        console.log(selectedValue);
         body = {
           ...values,
-          parentCategoryId: null,
+          parentCategoryId: selectedValue,
           logo: imageUrl,
         };
+
         const result = await addCategoryMutation.mutateAsync(body);
         toast({
           description: "Create category successfully",
@@ -86,7 +115,7 @@ export default function AddCategory() {
         <Button size="sm" className="h-7 gap-1">
           <PlusCircle className="h-3.5 w-3.5" />
           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-            Create category
+            Create child
           </span>
         </Button>
       </DialogTrigger>
@@ -95,11 +124,11 @@ export default function AddCategory() {
           <DialogTitle>Create category</DialogTitle>
           <DialogDescription>Field name, logo is require</DialogDescription>
         </DialogHeader>
-        <Form {...form}>
+        <FormProvider {...form}>
           <form
             noValidate
             className="grid auto-rows-max items-start gap-4 md:gap-8"
-            id="add-category-form"
+            id="add-category-child-form"
             onSubmit={form.handleSubmit(onSubmit, (e) => {
               console.log(e);
             })}
@@ -161,11 +190,42 @@ export default function AddCategory() {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="parentCategoryId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Categories</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={
+                          selectedValue != null ? String(selectedValue) : ""
+                        }
+                        onValueChange={(value) =>
+                          setSelectedValue(value ? Number(value) : null)
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Chose parent category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((cate, index) => (
+                            <SelectItem key={index} value={cate.id.toString()}>
+                              {cate.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </form>
-        </Form>
+        </FormProvider>
         <DialogFooter>
-          <Button type="submit" form="add-category-form">
+          <Button type="submit" form="add-category-child-form">
             Create
           </Button>
         </DialogFooter>

@@ -1,4 +1,3 @@
-import { useListCategories } from "@/app/queries/useCategory";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -8,24 +7,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { GetCategoryDetailResType } from "@/schemaValidations/category.model";
 import { X } from "lucide-react";
 import { useState } from "react";
 
 export default function MultiSelectCategory({
   value = [],
   onChange,
+  categories,
 }: {
   value?: number[] | undefined;
   onChange: (value: number[]) => void;
+  categories: GetCategoryDetailResType[];
 }) {
   const [currentCategory, setCurrentCategory] = useState<string>("");
-  const { data } = useListCategories();
-  if (!data) {
+  if (!categories) {
     return null;
   }
-  const categories = data.payload.data.sort((a, b) =>
-    a.name.localeCompare(b.name, "vi", { sensitivity: "base" })
-  );
   const handleAddCategory = (categoryId: string) => {
     const numericId = Number.parseInt(categoryId, 10);
     if (categoryId && !value?.includes(numericId)) {

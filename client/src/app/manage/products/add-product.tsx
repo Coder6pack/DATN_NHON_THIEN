@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import MultiSelectCategory from "./components/mutil-select";
+import MultiSelectCategory from "../../../components/mutil-select";
 import InputNumber from "./components/input-number";
 import ImageUpload from "./components/image-update";
 import SkuListField from "./components/sku-list-field";
@@ -52,6 +52,7 @@ import {
   handleHttpErrorApi,
 } from "@/lib/utils";
 import { useListBrand } from "@/app/queries/useBrand";
+import { useListCategories } from "@/app/queries/useCategory";
 
 interface SKU {
   value: string;
@@ -87,9 +88,16 @@ export default function AddProduct() {
   const addProductMutation = useAddProductMutation();
   const updateMediaMutation = useUploadFileMediaMutation();
   const { data: listBrand } = useListBrand();
+  const { data: listCategory } = useListCategories();
   if (!listBrand) {
     return;
   }
+  if (!listCategory) {
+    return;
+  }
+  const categories = listCategory.payload.data.sort((a, b) =>
+    a.name.localeCompare(b.name, "vi", { sensitivity: "base" })
+  );
   const getListBrand = listBrand.payload.data.sort((a, b) =>
     a.name.localeCompare(b.name, "vi", { sensitivity: "base" })
   );
@@ -224,6 +232,7 @@ export default function AddProduct() {
                                 <MultiSelectCategory
                                   value={field.value}
                                   onChange={field.onChange}
+                                  categories={categories}
                                 />
                               </FormControl>
                               <FormMessage />

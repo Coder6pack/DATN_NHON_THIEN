@@ -2,7 +2,7 @@
 
 import {
   checkAndRefreshToken,
-  getRefreshTokenFormLocalStorage,
+  getRefreshTokenFromLocalStorage,
 } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
@@ -15,7 +15,7 @@ function RefreshToken() {
   useEffect(() => {
     if (
       refreshTokenFromUrl &&
-      refreshTokenFromUrl === getRefreshTokenFormLocalStorage()
+      refreshTokenFromUrl === getRefreshTokenFromLocalStorage()
     ) {
       checkAndRefreshToken({
         onSuccess: () => {
