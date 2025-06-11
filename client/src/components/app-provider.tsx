@@ -5,7 +5,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import RefreshToken from "./refresh-token";
 import { createContext, useContext, useEffect, useState } from "react";
 import {
-  getAccessTokenFormLocalStorage,
+  getAccessTokenFromLocalStorage,
   removeTokensFromLocalStorage,
 } from "@/lib/utils";
 const queryClient = new QueryClient({
@@ -31,7 +31,7 @@ export default function AppProvider({
 }) {
   const [isAuth, setIsAuthState] = useState(false);
   useEffect(() => {
-    const accessToken = getAccessTokenFormLocalStorage();
+    const accessToken = getAccessTokenFromLocalStorage();
     if (accessToken) {
       setIsAuthState(true);
     }

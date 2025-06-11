@@ -55,6 +55,7 @@ import {
   useDeleteCategoryMutation,
   useListCategories,
 } from "@/app/queries/useCategory";
+import AddCategoryChild from "./add-category-child";
 
 const CategoryTableContext = createContext<{
   setCategoryIdEdit: (value: number) => void;
@@ -284,6 +285,7 @@ export default function CategoryTable() {
           />
           <div className="ml-auto flex items-center gap-2">
             <AddCategory />
+            <AddCategoryChild />
           </div>
         </div>
         <div className="rounded-md border">

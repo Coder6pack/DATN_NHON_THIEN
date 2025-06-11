@@ -43,7 +43,6 @@ export default function LoginForm() {
   const onSubmit = async (data: LoginBodyType) => {
     if (loginMutation.isPending) return;
     try {
-      if (loginMutation.isPending) return;
       const result = await loginMutation.mutateAsync(data);
       toast({
         description: "Login successfully",

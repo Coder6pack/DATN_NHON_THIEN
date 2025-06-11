@@ -1,7 +1,7 @@
 "use client";
 
 import { useAppContext } from "@/components/app-provider";
-import { getAccessTokenFormLocalStorage } from "@/lib/utils";
+import { getAccessTokenFromLocalStorage } from "@/lib/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 

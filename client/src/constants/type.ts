@@ -6,9 +6,10 @@ export const TokenType = {
 
 export const Role = {
   Admin: "Admin",
+  Seller: "Seller",
   Client: "Client",
 } as const;
 
-export const RoleValues = [Role.Admin, Role.Client] as const;
+export const RoleValues = [Role.Admin, Role.Seller, Role.Client] as const;
 
 export const ManagerRoom = "manager" as const;

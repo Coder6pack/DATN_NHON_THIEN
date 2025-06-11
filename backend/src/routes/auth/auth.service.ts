@@ -139,7 +139,7 @@ export class AuthService {
 				roleId,
 				roleName,
 			}),
-			this.tokenService.signRefreshToken({ userId }),
+			this.tokenService.signRefreshToken({ userId, roleName }),
 		])
 		const decodeRefreshToken = await this.tokenService.verifyRefreshToken(refreshToken)
 		await this.authRepository.createRefreshToken({

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -30,6 +29,8 @@ import {
   RegisterBodyType,
 } from "@/schemaValidations/auth.model";
 import { useRouter } from "next/navigation";
+import { useRegisterMutation, useSendOTPMutation } from "@/app/queries/useAuth";
+import { handleHttpErrorApi } from "@/lib/utils";
 
 export default function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -48,15 +49,45 @@ export default function RegisterForm() {
       code: "",
     },
   });
+  const sendOTPMutation = useSendOTPMutation();
+  const registerMutation = useRegisterMutation();
+  const email = form.watch("email");
+  const handleSendVerificationCode = async () => {
+    if (!email) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter your email first.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  const onSubmit = async (data: RegisterBodyType) => {
     try {
       setIsLoading(true);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      console.log("Form submitted:", data);
+      const result = await sendOTPMutation.mutateAsync({
+        email,
+        type: "REGISTER",
+      });
+      toast({
+        title: "Verification code sent",
+        description:
+          "A verification code has been sent to your email and phone.",
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to send code",
+        description: "Your email already exists. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const onSubmit = async (data: RegisterBodyType) => {
+    if (registerMutation.isPending) return;
+    try {
+      setIsLoading(true);
+      const result = await registerMutation.mutateAsync(data);
 
       toast({
         title: "Registration successful!",
@@ -73,44 +104,7 @@ export default function RegisterForm() {
           "There was a problem with your registration. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSendVerificationCode = async () => {
-    const email = form.getValues("email");
-    const phoneNumber = form.getValues("phoneNumber");
-
-    // Validate email and phone before sending code
-    if (!email || !phoneNumber) {
-      toast({
-        title: "Validation Error",
-        description: "Please enter your email and phone number first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-
-      // Simulate API call to send verification code
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setIsCodeSent(true);
-      toast({
-        title: "Verification code sent",
-        description:
-          "A verification code has been sent to your email and phone.",
-      });
-    } catch (error) {
-      toast({
-        title: "Failed to send code",
-        description:
-          "There was a problem sending the verification code. Please try again.",
-        variant: "destructive",
-      });
+      handleHttpErrorApi({ error, setError: form.setError });
     } finally {
       setIsLoading(false);
     }
@@ -136,7 +130,7 @@ export default function RegisterForm() {
                 <FormItem>
                   <FormLabel>Full Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder="John Doe" required {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -153,6 +147,7 @@ export default function RegisterForm() {
                     <Input
                       type="email"
                       placeholder="example@example.com"
+                      required
                       {...field}
                     />
                   </FormControl>
@@ -168,7 +163,7 @@ export default function RegisterForm() {
                 <FormItem>
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="0123456789" {...field} />
+                    <Input placeholder="0123456789" required {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -186,6 +181,7 @@ export default function RegisterForm() {
                       <Input
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
+                        required
                         {...field}
                       />
                       <Button
@@ -222,6 +218,7 @@ export default function RegisterForm() {
                       <Input
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="••••••••"
+                        required
                         {...field}
                       />
                       <Button
@@ -260,7 +257,12 @@ export default function RegisterForm() {
                     <FormItem className="flex-1">
                       <FormLabel>Verification Code</FormLabel>
                       <FormControl>
-                        <Input placeholder="123456" maxLength={6} {...field} />
+                        <Input
+                          placeholder="123456"
+                          maxLength={6}
+                          required
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

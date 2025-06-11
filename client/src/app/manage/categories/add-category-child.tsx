@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle, Upload } from "lucide-react";
 import { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
@@ -46,6 +46,7 @@ import {
 export default function AddCategoryChild() {
   const [file, setFile] = useState<File | null>(null);
   const [open, setOpen] = useState(false);
+  const [selectedValue, setSelectedValue] = useState<number | null>(null);
   const addCategoryMutation = useAddCategoryMutation();
   const updateMediaMutation = useUploadFileMediaMutation();
   const { data: listCategories } = useListCategories();
@@ -67,10 +68,13 @@ export default function AddCategoryChild() {
       a.name.localeCompare(b.name, "vi", { sensitivity: "base" })
     );
   const name = form.watch("name");
-  const parentCategoryId = form.watch("parentCategoryId");
   const previewAvatarFromFile = file ? URL.createObjectURL(file) : null;
   const reset = () => {
-    form.reset();
+    form.reset({
+      logo: "",
+      name: "",
+      parentCategoryId: null,
+    });
     setFile(null);
   };
   const onSubmit = async (values: CreateCategoryBodyType) => {
@@ -84,16 +88,13 @@ export default function AddCategoryChild() {
           formData
         );
         const imageUrl = uploadImageResult.payload.data[0].url;
+        console.log(selectedValue);
         body = {
           ...values,
+          parentCategoryId: selectedValue,
           logo: imageUrl,
         };
-        if (parentCategoryId) {
-          body = {
-            ...body,
-            parentCategoryId: Number(parentCategoryId),
-          };
-        }
+
         const result = await addCategoryMutation.mutateAsync(body);
         toast({
           description: "Create category successfully",
@@ -114,7 +115,7 @@ export default function AddCategoryChild() {
         <Button size="sm" className="h-7 gap-1">
           <PlusCircle className="h-3.5 w-3.5" />
           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-            Create category
+            Create child
           </span>
         </Button>
       </DialogTrigger>
@@ -123,11 +124,11 @@ export default function AddCategoryChild() {
           <DialogTitle>Create category</DialogTitle>
           <DialogDescription>Field name, logo is require</DialogDescription>
         </DialogHeader>
-        <Form {...form}>
+        <FormProvider {...form}>
           <form
             noValidate
             className="grid auto-rows-max items-start gap-4 md:gap-8"
-            id="add-category-form"
+            id="add-category-child-form"
             onSubmit={form.handleSubmit(onSubmit, (e) => {
               console.log(e);
             })}
@@ -197,15 +198,19 @@ export default function AddCategoryChild() {
                     <FormLabel>Categories</FormLabel>
                     <FormControl>
                       <Select
-                        onValueChange={field.onChange}
-                        value={field.value?.toString()}
+                        value={
+                          selectedValue != null ? String(selectedValue) : ""
+                        }
+                        onValueChange={(value) =>
+                          setSelectedValue(value ? Number(value) : null)
+                        }
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Chose parent category" />
                         </SelectTrigger>
                         <SelectContent>
-                          {categories.map((cate) => (
-                            <SelectItem value={cate.id.toString()}>
+                          {categories.map((cate, index) => (
+                            <SelectItem key={index} value={cate.id.toString()}>
                               {cate.name}
                             </SelectItem>
                           ))}
@@ -218,9 +223,9 @@ export default function AddCategoryChild() {
               />
             </div>
           </form>
-        </Form>
+        </FormProvider>
         <DialogFooter>
-          <Button type="submit" form="add-category-form">
+          <Button type="submit" form="add-category-child-form">
             Create
           </Button>
         </DialogFooter>

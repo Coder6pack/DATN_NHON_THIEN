@@ -15,14 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUploadFileMediaMutation } from "@/app/queries/useMedia";
 import { toast } from "@/hooks/use-toast";
@@ -35,40 +28,23 @@ import {
   CreateCategoryBodySchema,
   CreateCategoryBodyType,
 } from "@/schemaValidations/category.model";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import SingleSelectCategory from "./single-select";
 
 export default function AddCategory() {
   const [file, setFile] = useState<File | null>(null);
   const [open, setOpen] = useState(false);
   const addCategoryMutation = useAddCategoryMutation();
   const updateMediaMutation = useUploadFileMediaMutation();
-  const { data: listCategories } = useListCategories();
   const logoInputRef = useRef<HTMLInputElement | null>(null);
   const form = useForm<CreateCategoryBodyType>({
     resolver: zodResolver(CreateCategoryBodySchema),
     defaultValues: {
       name: "",
       logo: "",
-      parentCategoryId: undefined,
+      parentCategoryId: null,
     },
   });
-  if (!listCategories) {
-    return;
-  }
-  const categories = listCategories.payload.data
-    .filter((category) => category.parentCategoryId === null)
-    .sort((a, b) =>
-      a.name.localeCompare(b.name, "vi", { sensitivity: "base" })
-    );
+
   const name = form.watch("name");
-  const parentCategoryId = form.watch("parentCategoryId");
   const previewAvatarFromFile = file ? URL.createObjectURL(file) : null;
   const reset = () => {
     form.reset();
@@ -87,14 +63,9 @@ export default function AddCategory() {
         const imageUrl = uploadImageResult.payload.data[0].url;
         body = {
           ...values,
+          parentCategoryId: null,
           logo: imageUrl,
         };
-        if (parentCategoryId) {
-          body = {
-            ...body,
-            parentCategoryId: Number(parentCategoryId),
-          };
-        }
         const result = await addCategoryMutation.mutateAsync(body);
         toast({
           description: "Create category successfully",
@@ -187,23 +158,6 @@ export default function AddCategory() {
                         <FormMessage />
                       </div>
                     </div>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="parentCategoryId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <FormControl>
-                      <SingleSelectCategory
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="Choose category..."
-                      />
-                    </FormControl>
-                    <FormMessage />
                   </FormItem>
                 )}
               />

@@ -57,6 +57,7 @@ export default function SingleSelectCategory({
         <Select
           value={value ? value.toString() : ""}
           onValueChange={handleValueChange}
+          required={false}
         >
           <SelectTrigger className="flex-1">
             <SelectValue placeholder={placeholder} />

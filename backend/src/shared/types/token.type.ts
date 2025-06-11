@@ -9,6 +9,7 @@ export interface AccessTokenPayload extends AccessTokenPayloadCreate {
 	iat: number
 }
 export interface RefreshTokenPayloadCreate {
+	roleName: string
 	userId: number
 }
 

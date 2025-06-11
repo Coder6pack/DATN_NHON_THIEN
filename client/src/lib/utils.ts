@@ -6,6 +6,7 @@ import { UseFormSetError } from "react-hook-form";
 import { EntityError } from "./http";
 import { toast } from "@/hooks/use-toast";
 import { authApiRequest } from "@/app/apiRequests/auth";
+import { AccessTokenPayload } from "@/types/token.type";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -55,10 +56,10 @@ export const handleHttpErrorApi = ({
 
 const isBrowser = typeof window !== "undefined";
 
-export const getAccessTokenFormLocalStorage = () =>
+export const getAccessTokenFromLocalStorage = () =>
   isBrowser ? localStorage.getItem("accessToken") : null;
 
-export const getRefreshTokenFormLocalStorage = () =>
+export const getRefreshTokenFromLocalStorage = () =>
   isBrowser ? localStorage.getItem("refreshToken") : null;
 export const setAccessTokenToLocalStorage = (value: string) =>
   isBrowser && localStorage.setItem("accessToken", value);
@@ -69,12 +70,16 @@ export const removeTokensFromLocalStorage = () => {
   isBrowser && localStorage.removeItem("accessToken");
   isBrowser && localStorage.removeItem("refreshToken");
 };
+
+export const decodeToken = (token: string) => {
+  return jwt.decode(token) as AccessTokenPayload;
+};
 export const checkAndRefreshToken = async (param?: {
   onError?: () => void;
   onSuccess?: (tokens: { accessToken: string; refreshToken: string }) => void;
 }) => {
-  const accessToken = getAccessTokenFormLocalStorage();
-  const refreshToken = getRefreshTokenFormLocalStorage();
+  const accessToken = getAccessTokenFromLocalStorage();
+  const refreshToken = getRefreshTokenFromLocalStorage();
 
   // Nếu không có token, không thực hiện gì
   if (!accessToken || !refreshToken) {
@@ -84,13 +89,8 @@ export const checkAndRefreshToken = async (param?: {
 
   try {
     // Giải mã token
-    const decodedAccessToken = jwtDecode<{ exp: number; iat: number }>(
-      accessToken
-    );
-    const decodedRefreshToken = jwtDecode<{ exp: number; iat: number }>(
-      refreshToken
-    );
-
+    const decodedAccessToken = decodeToken(accessToken);
+    const decodedRefreshToken = decodeToken(refreshToken);
     // Kiểm tra token hợp lệ
     if (!decodedAccessToken?.exp || !decodedRefreshToken?.exp) {
       console.error("Invalid token format");
@@ -99,7 +99,7 @@ export const checkAndRefreshToken = async (param?: {
       return;
     }
 
-    const now = Math.floor(new Date().getTime() / 1000); // Thời gian hiện tại (giây)
+    const now = new Date().getTime() / 1000 - 1; // Thời gian hiện tại (giây)
 
     // Nếu refreshToken hết hạn, xóa token và gọi onError
     if (decodedRefreshToken.exp <= now) {
@@ -143,7 +143,52 @@ export const checkAndRefreshToken = async (param?: {
     param?.onError?.();
   }
 };
-
+//   onError?: () => void;
+//   onSuccess?: () => void;
+// }) => {
+//   // Không nên đưa logic lấy access và refresh token ra khỏi cái function `checkAndRefreshToken`
+//   // Vì để mỗi lần mà checkAndRefreshToken() được gọi thì chúng ta se có một access và refresh token mới
+//   // Tránh hiện tượng bug nó lấy access và refresh token cũ ở lần đầu rồi gọi cho các lần tiếp theo
+//   const accessToken = getAccessTokenFromLocalStorage();
+//   const refreshToken = getRefreshTokenFromLocalStorage();
+//   // Chưa đăng nhập thì cũng không cho chạy
+//   if (!accessToken || !refreshToken) return;
+//   const decodedAccessToken = jwt.decode(accessToken) as {
+//     exp: number;
+//     iat: number;
+//   };
+//   const decodedRefreshToken = jwt.decode(refreshToken) as {
+//     exp: number;
+//     iat: number;
+//   };
+//   // Thời điểm hết hạn của token là tính theo epoch time (s)
+//   // Còn khi các bạn dùng cú pháp new Date().getTime() thì nó sẽ trả về epoch time (ms)
+//   const now = Math.round(new Date().getTime() / 1000);
+//   // trường hợp refresh token hết hạn thì không xử lý nữa
+//   // trường hợp refresh token hết hạn thì cho logoutAdd commentMore actions
+//   if (decodedRefreshToken.exp <= now) {
+//     removeTokensFromLocalStorage();
+//     return param?.onError && param.onError();
+//   }
+//   // Ví dụ access token của chúng ta có thời gian hết hạn là 10s
+//   // thì mình sẽ kiểm tra còn 1/3 thời gian (3s) thì mình sẽ cho refresh token lại
+//   // Thời gian còn lại sẽ tính dựa trên công thức: decodedAccessToken.exp - now
+//   // Thời gian hết hạn của access token dựa trên công thức: decodedAccessToken.exp - decodedAccessToken.iat
+//   if (
+//     decodedAccessToken.exp - now <
+//     (decodedAccessToken.exp - decodedAccessToken.iat) / 3
+//   ) {
+//     // Gọi API refresh token
+//     try {
+//       const res = await authApiRequest.refreshToken();
+//       setAccessTokenToLocalStorage(res.payload.accessToken);
+//       setRefreshTokenToLocalStorage(res.payload.refreshToken);
+//       param?.onSuccess && param.onSuccess();
+//     } catch (error) {
+//       param?.onError && param.onError();
+//     }
+//   }
+// };
 export function formatCurrency(currency: number) {
   return new Intl.NumberFormat("de-DE").format(currency);
 }
