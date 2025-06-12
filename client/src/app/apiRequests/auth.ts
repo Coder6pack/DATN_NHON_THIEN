@@ -1,5 +1,6 @@
 import http from "@/lib/http";
 import {
+  ForgotPasswordBodyType,
   LoginBodyType,
   LoginResType,
   LogoutBodyType,
@@ -62,4 +63,7 @@ export const authApiRequest = {
   },
 
   sendOTP: (body: SendOPTBodyType) => http.post("/auth/otp", body),
+
+  forgotPassword: (body: ForgotPasswordBodyType) =>
+    http.post("/auth/forgot-password", body),
 };

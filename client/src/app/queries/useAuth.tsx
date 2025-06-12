@@ -20,3 +20,8 @@ export const useSendOTPMutation = () =>
   useMutation({
     mutationFn: authApiRequest.sendOTP,
   });
+
+export const useForgotPasswordMutation = () =>
+  useMutation({
+    mutationFn: authApiRequest.forgotPassword,
+  });

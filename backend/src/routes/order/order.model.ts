@@ -1,19 +1,6 @@
 import { PaginationQuerySchema } from 'src/shared/models/request.model'
-import { OrderSchema, OrderStatusSchema } from 'src/shared/models/shared-order.model'
+import { OrderSchema, OrderStatusSchema, ProductSKUSnapshotSchema } from 'src/shared/models/shared-order.model'
 import { z } from 'zod'
-
-export const ProductSKUSnapshotSchema = z.object({
-	id: z.number(),
-	productId: z.number().nullable(),
-	productName: z.string(),
-	skuPrice: z.number(),
-	image: z.string(),
-	skuValue: z.string(),
-	skuId: z.number().nullable(),
-	orderId: z.number().nullable(),
-	quantity: z.number(),
-	createdAt: z.date(),
-})
 
 export const GetOrderListResSchema = z.object({
 	data: z.array(

@@ -131,6 +131,15 @@ export default function LoginForm() {
             Sign up
           </Link>
         </div>
+        <div className="text-center text-sm">
+          Forgot your password?{" "}
+          <Link
+            href="/forgot-password"
+            className="text-primary underline-offset-4 hover:underline"
+          >
+            Click here
+          </Link>
+        </div>
       </CardFooter>
     </Card>
   );
