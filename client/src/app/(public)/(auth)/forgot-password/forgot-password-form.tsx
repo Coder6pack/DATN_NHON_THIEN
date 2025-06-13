@@ -282,7 +282,7 @@ export default function ForgotPasswordForm() {
         <div className="text-center text-sm">
           No have account?{" "}
           <Link
-            href="/register"
+            href="/login"
             className="text-primary underline-offset-4 hover:underline"
           >
             Sign up

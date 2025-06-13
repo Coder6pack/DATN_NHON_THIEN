@@ -55,7 +55,7 @@ export const useDeleteSlideShowMutation = () => {
     mutationFn: slideShowApiRequest.deleteSlideShow,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["list-brand"],
+        queryKey: ["list-slide-show"],
       });
     },
   });
