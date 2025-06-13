@@ -5,10 +5,10 @@ const { fontFamily } = require("tailwindcss/defaultTheme");
 const config = {
   darkMode: ["class"],
   content: [
-    "./app/**/*.{js,ts,jsx,tsx,mdx}", // Hỗ trợ Next.js App Router
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}", // Hỗ trợ Next.js Pages Router
-    "./components/**/*.{js,ts,jsx,tsx,mdx}", // Thư mục components
-    "./src/**/*.{js,ts,jsx,tsx,mdx}", // Thư mục src (nếu có)
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
   ],
   prefix: "",
   theme: {
