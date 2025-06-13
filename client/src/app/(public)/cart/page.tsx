@@ -4,16 +4,84 @@ import { useCart } from '@/context/CartContext';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import CartContent from '@/components/cart/CartContent';
+import CartSummary from '@/components/cart/CartSummary';
+import React, { useState, useEffect } from 'react';
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateQuantity } = useCart();
+  const { cart, removeFromCart, removeMultipleFromCart } = useCart();
   const router = useRouter();
 
-  const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  // allSelected will now be a derived value, not a state
+  // const [allSelected, setAllSelected] = useState(false);
+
+  // Main useEffect for synchronizing selection with cart changes
+  useEffect(() => {
+    // If cart becomes empty, clear selected items
+    if (cart.length === 0) {
+      if (selectedItems.length > 0) { // Only update if it's actually changing
+        setSelectedItems([]);
+      }
+    } else {
+      const currentCartItemKeys = new Set(cart.map(item => `${item.id}-${item.color || 'no-color'}-${item.size || 'no-size'}`));
+      
+      // Filter selectedItems to only include items still present in the cart
+      const newFilteredSelectedItems = selectedItems.filter(key => currentCartItemKeys.has(key));
+
+      // Check if the filtered selected items are different from the current selectedItems state
+      const areFilteredItemsDifferent = 
+        newFilteredSelectedItems.length !== selectedItems.length ||
+        newFilteredSelectedItems.some((item, index) => item !== selectedItems[index]);
+
+      if (areFilteredItemsDifferent) {
+        setSelectedItems(newFilteredSelectedItems);
+      }
+      // We no longer set allSelected here
+    }
+  }, [cart]); // This effect only depends on 'cart'
+
+  // Derived value for allSelected
+  const allSelected = cart.length > 0 && selectedItems.length === cart.length;
+
+  const handleSelectAll = (isChecked: boolean) => {
+    // setAllSelected(isChecked); // No longer a state
+    if (isChecked) {
+      const allItemKeys = cart.map(item => `${item.id}-${item.color || 'no-color'}-${item.size || 'no-size'}`);
+      setSelectedItems(allItemKeys);
+    } else {
+      setSelectedItems([]);
+    }
+  };
+
+  const handleSelectItem = (itemKey: string, isChecked: boolean) => {
+    if (isChecked) {
+      setSelectedItems(prev => [...prev, itemKey]);
+    } else {
+      setSelectedItems(prev => prev.filter(key => key !== itemKey));
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    const itemsToDelete = [...selectedItems]; // Capture selected items before clearing
+    setSelectedItems([]); // Clear selected items immediately
+    removeMultipleFromCart(itemsToDelete); // Then remove from cart
+  };
+
+  const selectedCartItems = cart.filter(item => 
+    selectedItems.includes(`${item.id}-${item.color || 'no-color'}-${item.size || 'no-size'}`)
+  );
+
+  const subtotal = selectedCartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const shipping = subtotal > 0 ? 30000 : 0; // Free shipping for orders over 0đ
+  const total = subtotal + shipping;
+  const totalSavings = selectedCartItems.reduce((total, item) => total + ((item.originalPrice || item.price) - item.price) * item.quantity, 0);
 
   const handleCheckout = () => {
-    if (cart.length > 0) {
+    if (selectedCartItems.length > 0) {
       router.push('/payment');
+    } else {
+      alert('Vui lòng chọn sản phẩm để thanh toán.');
     }
   };
 
@@ -32,92 +100,26 @@ export default function CartPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-md">
-              {cart.map((item) => (
-                <div key={`${item.id}-${item.color || 'no-color'}-${item.size || 'no-size'}`} 
-                     className="p-4 border-b last:border-b-0">
-                  <div className="flex gap-4">
-                    <div className="relative w-24 h-24">
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className="object-cover rounded-lg"
-                      />
-                    </div>
-                    <div className="flex-grow">
-                      <Link href={`/product/${item.id}`} className="font-medium hover:underline">
-                        {item.name}
-                      </Link>
-                      {item.color && <p className="text-sm text-gray-600">Màu: {item.color}</p>}
-                      {item.size && <p className="text-sm text-gray-600">Size: {item.size}</p>}
-                      <div className="flex items-center gap-4 mt-2">
-                        <div className="flex items-center border rounded-lg">
-                          <button
-                            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1), item.color, item.size)}
-                            className="px-3 py-1 hover:bg-gray-100"
-                          >
-                            -
-                          </button>
-                          <span className="px-3 py-1">{item.quantity}</span>
-                          <button
-                            onClick={() => updateQuantity(item.id, item.quantity + 1, item.color, item.size)}
-                            className="px-3 py-1 hover:bg-gray-100"
-                          >
-                            +
-                          </button>
-                        </div>
-                        <button
-                          onClick={() => removeFromCart(item.id, item.color, item.size)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          Xóa
-                        </button>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">
-                        {(item.price * item.quantity).toLocaleString('vi-VN')}đ
-                      </p>
-                      {item.originalPrice && (
-                        <p className="text-sm text-gray-500 line-through">
-                          {(item.originalPrice * item.quantity).toLocaleString('vi-VN')}đ
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <CartContent 
+              cart={cart}
+              selectedItems={selectedItems}
+              allSelected={allSelected}
+              handleSelectAll={handleSelectAll}
+              handleSelectItem={handleSelectItem}
+              handleDeleteSelected={handleDeleteSelected}
+            />
           </div>
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Tổng đơn hàng</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tạm tính</span>
-                  <span>{totalAmount.toLocaleString('vi-VN')}đ</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Phí vận chuyển</span>
-                  <span>Miễn phí</span>
-                </div>
-                <div className="border-t pt-3">
-                  <div className="flex justify-between font-semibold">
-                    <span>Tổng cộng</span>
-                    <span className="text-red-600">{totalAmount.toLocaleString('vi-VN')}đ</span>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={handleCheckout}
-                className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Thanh toán
-              </button>
-            </div>
+            <CartSummary 
+              subtotal={subtotal}
+              shipping={shipping}
+              total={total}
+              totalQuantitySelected={selectedItems.length}
+              totalSavings={totalSavings}
+              handleCheckout={handleCheckout}
+            />
           </div>
         </div>
       )}

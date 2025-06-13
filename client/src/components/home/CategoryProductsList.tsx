@@ -130,6 +130,83 @@ const categories = [
           { code: "#fff", name: "Trắng" },
         ],
       },
+      {
+        id: "9",
+        name: "Áo Polo Nam Sport Premium",
+        image: "/images/thun.jpg",
+        price: 289000,
+        oldPrice: 329000,
+        discount: 12,
+        rating: 4.9,
+        reviews: 92,
+        label: "NEW",
+        colors: [
+          { code: "#222", name: "Đen" },
+          { code: "#fff", name: "Trắng" },
+          { code: "#bdbdbd", name: "Xám" },
+        ],
+      },
+      {
+        id: "10",
+        name: "Áo Polo Nam Active Pro",
+        image: "/images/thun.jpg",
+        price: 299000,
+        oldPrice: 349000,
+        discount: 14,
+        rating: 4.8,
+        reviews: 78,
+        label: "ĐÁNG MUA",
+        colors: [
+          { code: "#222", name: "Đen" },
+          { code: "#fff", name: "Trắng" },
+        ],
+      },
+      {
+        id: "11",
+        name: "Áo Polo Nam Classic Fit",
+        image: "/images/thun.jpg",
+        price: 259000,
+        oldPrice: 299000,
+        discount: 13,
+        rating: 4.7,
+        reviews: 45,
+        label: null,
+        colors: [
+          { code: "#795548", name: "Nâu" },
+          { code: "#f5f5dc", name: "Be" },
+        ],
+      },
+      {
+        id: "12",
+        name: "Áo Polo Nam Slim Fit",
+        image: "/images/thun.jpg",
+        price: 279000,
+        oldPrice: 319000,
+        discount: 13,
+        rating: 4.9,
+        reviews: 156,
+        label: "OUTLET",
+        colors: [
+          { code: "#222", name: "Đen" },
+          { code: "#fff", name: "Trắng" },
+          { code: "#bdbdbd", name: "Xám" },
+        ],
+      },
+      {
+        id: "13",
+        name: "Áo Polo Nam Performance",
+        image: "/images/thun.jpg",
+        price: 309000,
+        oldPrice: 359000,
+        discount: 14,
+        rating: 4.8,
+        reviews: 89,
+        label: "NEW",
+        colors: [
+          { code: "#222", name: "Đen" },
+          { code: "#fff", name: "Trắng" },
+        ],
+      },
     ]
   },
   {
@@ -514,7 +591,7 @@ const categories = [
 
 export default function CategoryProductsList() {
   return (
-    <div className="container mx-auto px-4">
+    <div className="max-w-7xl mx-auto px-4">
       {categories.map((category) => (
         <CategoryProducts
           key={category.id}

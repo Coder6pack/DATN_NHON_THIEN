@@ -58,7 +58,7 @@ export default function RichTextEditor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[150px] p-4",
+          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[150px] p-4 text-gray-900 dark:text-gray-100",
       },
     },
     immediatelyRender: false,
@@ -103,8 +103,8 @@ export default function RichTextEditor({
   }
 
   return (
-    <div className="border rounded-md">
-      <div className="border-b p-2 flex flex-wrap gap-1">
+    <div className="border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+      <div className="border-b p-2 flex flex-wrap gap-1 border-gray-300 dark:border-gray-600">
         <Button
           type="button"
           variant={editor.isActive("bold") ? "default" : "ghost"}

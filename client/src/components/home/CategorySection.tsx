@@ -1,96 +1,38 @@
 "use client";
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
-
-interface Category {
-  id: string;
-  name: string;
-  image: string;
-  link: string;
-}
-
-const categoriesNam: Category[] = [
-  {
-    id: '1',
-    name: 'ÁO THUN',
-    image: '/images/Thun_Namz.jpg',
-    link: '/category/ao-thun'
-  },
-  {
-    id: '2',
-    name: 'ÁO POLO',
-    image: '/images/Polo.jpg',
-    link: '/category/ao-polo'
-  },
-  {
-    id: '3',
-    name: 'QUẦN SHORT',
-    image: '/images/Shortss.jpg',
-    link: '/category/quan-short'
-  },
-  {
-    id: '4',
-    name: 'QUẦN LÓT',
-    image: '/images/Do_lotz.jpg',
-    link: '/category/quan-lot'
-  },
-  {
-    id: '5',
-    name: 'ĐỒ BƠI',
-    image: '/images/Do_boiz.jpg',
-    link: '/category/do-boi'
-  },
-  {
-    id: '6',
-    name: 'PHỤ KIỆN',
-    image: '/images/z.jpg',
-    link: '/category/phu-kien'
-  }
-];
-
-const categoriesNu: Category[] = [
-  {
-    id: '1',
-    name: 'ÁO THUN',
-    image: '/images/ao-thun-nu.jpg',
-    link: '/category/ao-thun'
-  },
-  {
-    id: '2',
-    name: 'ÁO POLO',
-    image: '/images/ao-polo-nu.jpg',
-    link: '/category/ao-polo'
-  },
-  {
-    id: '3',
-    name: 'QUẦN SHORT',
-    image: '/images/quan-short-nu.jpg',
-    link: '/category/quan-short'
-  },
-  {
-    id: '4',
-    name: 'QUẦN LÓT',
-    image: '/images/quan-lot-nu.jpg',
-    link: '/category/quan-lot'
-  },
-  {
-    id: '5',
-    name: 'ĐỒ BƠI',
-    image: '/images/do-boi-nu.jpg',
-    link: '/category/do-boi'
-  },
-  {
-    id: '6',
-    name: 'PHỤ KIỆN',
-    image: '/images/phu-kien-nu.jpg',
-    link: '/category/phu-kien'
-  }
-];
+import { useState, useRef, useEffect } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Category, categoriesNam, categoriesNu } from '@/data/categories';
 
 const CategorySection = () => {
   const [tab, setTab] = useState<'nam' | 'nu'>('nam');
+  const [mounted, setMounted] = useState(false);
   const categories = tab === 'nam' ? categoriesNam : categoriesNu;
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 300;
+      const currentScroll = scrollContainerRef.current.scrollLeft;
+      const newScroll = direction === 'left' 
+        ? currentScroll - scrollAmount 
+        : currentScroll + scrollAmount;
+      
+      scrollContainerRef.current.scrollTo({
+        left: newScroll,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <section className="py-16 bg-white">
@@ -110,28 +52,52 @@ const CategorySection = () => {
             ĐỒ NỮ
           </button>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10">
-          {categories.map((category) => (
-            <Link
-              key={category.id}
-              href={category.link}
-              className="group block"
-            >
-              <div className="relative overflow-hidden rounded-2xl shadow-sm bg-white">
-                <div className="aspect-[3/4] relative w-full min-h-[340px]">
-                  <Image
-                    src={category.image}
-                    alt={category.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+
+        <div className="relative">
+          <button
+            onClick={() => scroll('left')}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+
+          <div 
+            ref={scrollContainerRef}
+            className="flex overflow-x-auto gap-10 pb-4 scrollbar-hide snap-x snap-mandatory"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {categories.map((category) => (
+              <Link
+                key={category.id}
+                href={category.link}
+                className="group block flex-none snap-start"
+                style={{ width: 'calc(16.666% - 8.333px)' }}
+              >
+                <div className="relative overflow-hidden rounded-2xl shadow-sm bg-white">
+                  <div className="aspect-[3/4] relative w-full min-h-[340px]">
+                    <Image
+                      src={category.image}
+                      alt={category.name}
+                      fill
+                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 16.666vw"
+                      priority={false}
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="text-center py-4 font-bold text-base uppercase tracking-wide text-black group-hover:text-blue-600 transition-colors duration-200">
+                    {category.name}
+                  </div>
                 </div>
-                <div className="text-center py-4 font-bold text-base uppercase tracking-wide text-black group-hover:text-blue-600 transition-colors duration-200">
-                  {category.name}
-                </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
+
+          <button
+            onClick={() => scroll('right')}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
         </div>
       </div>
     </section>

@@ -1,15 +1,31 @@
 'use client';
 
 import React from 'react';
-import { useCart } from '@/context/CartContext';
+// import { useCart } from '@/context/CartContext'; // No longer needed as props are passed down
 
-export default function CartSummary() {
-  const { cart } = useCart();
+interface CartSummaryProps {
+  subtotal: number;
+  shipping: number;
+  total: number;
+  totalQuantitySelected: number;
+  totalSavings: number;
+  handleCheckout: () => void;
+}
 
-  // Calculate totals
-  const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-  const shipping = subtotal > 0 ? 30000 : 0; // Free shipping for orders over 0đ
-  const total = subtotal + shipping;
+export default function CartSummary({
+  subtotal,
+  shipping,
+  total,
+  totalQuantitySelected,
+  totalSavings,
+  handleCheckout,
+}: CartSummaryProps) {
+  // const { cart } = useCart(); // No longer needed as props are passed down
+
+  // Calculate totals - now passed as props
+  // const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  // const shipping = subtotal > 0 ? 30000 : 0; // Free shipping for orders over 0đ
+  // const total = subtotal + shipping;
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -56,6 +72,13 @@ export default function CartSummary() {
           <span>Đổi trả trong 30 ngày</span>
         </div>
       </div>
+      <button
+        onClick={handleCheckout}
+        className="w-full mt-6 px-6 py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={totalQuantitySelected === 0}
+      >
+        MUA HÀNG
+      </button>
     </div>
   );
 } 

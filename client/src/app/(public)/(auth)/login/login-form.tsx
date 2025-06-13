@@ -54,10 +54,10 @@ export default function LoginForm() {
   };
 
   return (
-    <Card className="mx-auto max-w-sm">
+    <Card className="mx-auto max-w-sm bg-white dark:bg-gray-800">
       <CardHeader>
-        <CardTitle className="text-2xl">Đăng nhập</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-2xl text-gray-900 dark:text-gray-100">Đăng nhập</CardTitle>
+        <CardDescription className="text-gray-600 dark:text-gray-400">
           Nhập email và mật khẩu của bạn để đăng nhập vào hệ thống
         </CardDescription>
       </CardHeader>
@@ -77,12 +77,13 @@ export default function LoginForm() {
                 render={({ field }) => (
                   <FormItem>
                     <div className="grid gap-2">
-                      <Label htmlFor="email">Email</Label>
+                      <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">Email</Label>
                       <Input
                         id="email"
                         type="email"
                         placeholder="m@example.com"
                         required
+                        className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
                         {...field}
                       />
                       <FormMessage />
@@ -97,12 +98,13 @@ export default function LoginForm() {
                   <FormItem>
                     <div className="grid gap-2">
                       <div className="flex items-center">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">Password</Label>
                       </div>
                       <Input
                         id="password"
                         type="password"
                         required
+                        className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
                         {...field}
                       />
                       <FormMessage />
@@ -110,10 +112,10 @@ export default function LoginForm() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white">
                 Đăng nhập
               </Button>
-              <Button variant="outline" className="w-full" type="button">
+              <Button variant="outline" className="w-full text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700" type="button">
                 Đăng nhập bằng Google
               </Button>
             </div>

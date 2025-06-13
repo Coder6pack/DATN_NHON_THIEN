@@ -1,3 +1,3 @@
 export default function Dashboard() {
-  return <div>Dashboard</div>;
+  return <div className="text-gray-900 dark:text-gray-100">Dashboard</div>;
 }

@@ -29,11 +29,11 @@ export default function Layout({
             >
               <Package2 className="h-6 w-6" />
               <span className="sr-only">Nhon Thien</span>
-            </Link>
+          </Link>
             <NavItems className="text-muted-foreground transition-colors hover:text-foreground flex-shrink-0" />
-          </nav>
-          <Sheet>
-            <SheetTrigger asChild>
+        </nav>
+        <Sheet>
+          <SheetTrigger asChild>
               <Button
                 variant="outline"
                 size="icon"
@@ -41,13 +41,13 @@ export default function Layout({
               >
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle navigation menu</span>
-              </Button>
-            </SheetTrigger>
+            </Button>
+          </SheetTrigger>
             <SheetContent side="left">
               <SheetHeader className="sr-only">
-                <SheetTitle />
-                <SheetDescription />
-              </SheetHeader>
+              <SheetTitle />
+              <SheetDescription />
+            </SheetHeader>
               <nav className="grid gap-6 text-lg font-medium">
                 <Link
                   href="#"
@@ -55,20 +55,20 @@ export default function Layout({
                 >
                   <Package2 className="h-6 w-6" />
                   <span className="sr-only">Nhon Thien</span>
-                </Link>
+              </Link>
 
                 <NavItems className="text-muted-foreground transition-colors hover:text-foreground" />
-              </nav>
-            </SheetContent>
-          </Sheet>
+            </nav>
+          </SheetContent>
+        </Sheet>
           <div className="ml-auto">
-            <DarkModeToggle />
-          </div>
-        </header>
+          <DarkModeToggle />
+        </div>
+      </header>
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 pt-20">
           {children}
         </main>
-      </div>
+    </div>
     </CartProvider>
   );
 }

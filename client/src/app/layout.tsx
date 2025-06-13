@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import AppProvider from "@/components/app-provider";
+import ChatPopup from "@/components/ChatPopup";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -37,6 +38,7 @@ export default function RootLayout({
           >
             {children}
             <Toaster />
+            <ChatPopup />
           </ThemeProvider>
         </AppProvider>
       </body>

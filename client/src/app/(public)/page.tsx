@@ -1,20 +1,17 @@
 import Image from "next/image";
-import Banner from '@/components/home/Banner';
 import CategorySection from '@/components/home/CategorySection';
-import FeaturedProducts from '@/components/home/FeaturedProducts';
-import CareShareBanner from '@/components/home/CareShareBanner';
 import CategoryProductsList from '@/components/home/CategoryProductsList';
 import Footer from "@/components/layout/Footer";
+import AdBannerSlider from '@/components/AdBannerSlider';
 
 export default function Home() {
   return (
-    <div className="min-h-screen w-full">
+    <div className="min-h-screen w-full bg-white dark:bg-gray-900">
       <main className="pt-12">
-        <Banner />
+        <AdBannerSlider />
         <CategorySection />
-        <FeaturedProducts />
-        <section className="bg-white">
-        <CategoryProductsList />
+        <section className="bg-white dark:bg-gray-900">
+          <CategoryProductsList />
         </section>
       </main>
       <Footer />
