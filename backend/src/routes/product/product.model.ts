@@ -1,6 +1,6 @@
 import { BrandSchema } from 'src/shared/models/shared-brand.model'
 import { CategorySchema } from 'src/shared/models/shared-category.model'
-import { VariantsSchema } from 'src/shared/models/shared-product.model'
+import { ProductSchema, VariantsSchema } from 'src/shared/models/shared-product.model'
 import { SKUSchema } from 'src/shared/models/shared-sku.model'
 import { z } from 'zod'
 import { UpsertSKUBodySchema } from './sku.model'
@@ -26,24 +26,6 @@ function generateSKUs(variants: VariantsType) {
 		image: '',
 	}))
 }
-export const ProductSchema = z.object({
-	id: z.number(),
-	name: z.string().max(500),
-	basePrice: z.number().positive(),
-	virtualPrice: z.number().positive(),
-	brandId: z.number().positive(),
-	images: z.array(z.string()),
-	description: z.string(),
-	variants: VariantsSchema, // Json field represented as a record
-
-	createdById: z.number().nullable(),
-	updatedById: z.number().nullable(),
-	deletedById: z.number().nullable(),
-	deletedAt: z.date().nullable(),
-	createdAt: z.date(),
-	updatedAt: z.date(),
-})
-
 export const GetProductsQuerySchema = z.object({
 	page: z.coerce.number().int().positive().default(1),
 	limit: z.coerce.number().int().positive().default(10),

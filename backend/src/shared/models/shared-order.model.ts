@@ -39,7 +39,6 @@ export const ProductSKUSnapshotSchema = z.object({
 	skuId: z.number().nullable(),
 	orderId: z.number().nullable(),
 	quantity: z.number(),
-
 	createdAt: z.date(),
 })
 

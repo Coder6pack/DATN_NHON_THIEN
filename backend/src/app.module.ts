@@ -22,6 +22,7 @@ import { BullModule } from '@nestjs/bullmq'
 import { PaymentConsumer } from './queues/payment.consumer'
 import { WebsocketModule } from './websockets/websocket.module'
 import { SlideShowModule } from './routes/slideShow/slide-show.module'
+import { DashboardModule } from './routes/dashboard/dashboard.module'
 
 @Module({
 	imports: [
@@ -50,6 +51,7 @@ import { SlideShowModule } from './routes/slideShow/slide-show.module'
 		OrderModule,
 		PaymentModule,
 		SlideShowModule,
+		DashboardModule,
 	],
 	controllers: [AppController],
 	providers: [

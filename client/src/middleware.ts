@@ -6,7 +6,7 @@ import { Role } from "./constants/type";
 const managePath = ["/manage"];
 const guestPath = ["/guest"];
 const privatePaths = [...managePath, ...guestPath];
-const unAuthPaths = ["/login", "/register"];
+const unAuthPaths = ["/login", "/register", "/forgot-password"];
 
 export function middleware(request: NextRequest) {
   const accessToken = request.cookies.get("accessToken")?.value;
@@ -57,5 +57,11 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/manage/:path*", "/login", "/register"],
+  matcher: [
+    "/manage/:path*",
+    "/guest/:path",
+    "/forgot-password",
+    "/login",
+    "/register",
+  ],
 };
